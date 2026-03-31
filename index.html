@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gerador de Proposta — Jusbrasil</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0F3D2E;min-height:100vh;padding:24px 16px}
+.wrap{max-width:820px;margin:0 auto}
+.app-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding:16px 22px;background:rgba(255,255,255,.08);border-radius:14px;border:1px solid rgba(255,255,255,.12)}
+.app-logo{width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.app-title{color:#fff;font-size:17px;font-weight:700}
+.app-sub{color:rgba(255,255,255,.55);font-size:12px;margin-top:2px}
+#btnEditar{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer;color:#fff;font-family:inherit;font-weight:600;display:none}
+.card{background:#fff;border-radius:14px;padding:22px 24px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.2);border:1px solid #C8DDD6}
+.sec{font-size:11px;font-weight:700;color:#0F3D2E;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #E8F5EE}
+.lbl{display:block;font-size:12px;font-weight:600;color:#3D5A50;margin-bottom:5px}
+input,select{width:100%;border:1.5px solid #C8DDD6;border-radius:8px;padding:9px 12px;font-size:14px;color:#222;outline:none;background:#F7FBF9;font-family:inherit}
+input:focus,select:focus{border-color:#1E8A4C}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.tgl-row{display:flex;gap:8px}
+.tgl{flex:1;padding:9px 0;border-radius:8px;border:1.5px solid #C8DDD6;background:#F7FBF9;font-weight:700;font-size:13px;color:#5A6070;cursor:pointer;font-family:inherit}
+.tgl.sel{border:2px solid #1E8A4C;background:#E8F5EE;color:#0F3D2E}
+.vbox{border-radius:10px;padding:13px 16px;margin-bottom:12px}
+.vbox.verde{background:#E8F5EE;border:1px solid #A8DFC0}
+.vbox.azul{background:#E8F1FB;border:1px solid #B3CCF0}
+.vbox.amber{background:#FFF8E6;border:1px solid #F5D88C}
+.vbox.cinza{background:#F5F6FA;border:1px solid #E2E5EC}
+.vbox .vt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px}
+.vbox.verde .vt{color:#0F3D2E}.vbox.azul .vt{color:#1565C0}.vbox.amber .vt{color:#7D5A00}.vbox.cinza .vt{color:#555}
+.vrow{display:flex;gap:18px;flex-wrap:wrap}
+.vi .vi-l{font-size:10px;color:#5A6070;margin-bottom:1px}
+.vi .vi-m{font-weight:800;font-size:15px}
+.vi .vi-s{font-size:10px;color:#5A6070}
+.vi .vi-st{text-decoration:line-through;color:#aaa;font-size:12px}
+.c-v{color:#1E8A4C}.c-a{color:#1565C0}
+.badge-fixo{display:inline-block;background:#E8F5EE;color:#0F3D2E;border:1px solid #1E8A4C;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-left:8px}
+.badge-neg{display:inline-block;background:#FFF8E6;color:#7D5A00;border:1px solid #F5D88C;border-radius:6px;font-size:10px;font-weight:700;padding:2px 8px;margin-left:8px}
+.btn-go{width:100%;padding:15px 0;background:#1E8A4C;color:#fff;font-weight:700;font-size:15px;border-radius:12px;border:none;cursor:pointer;font-family:inherit}
+.btn-go:disabled{background:#aaa;cursor:not-allowed}
+.hint{text-align:center;font-size:12px;color:rgba(255,255,255,.5);margin-top:8px}
+.btn-row{display:flex;gap:12px;margin-bottom:14px}
+.btn-row button{flex:1;padding:13px 0;font-weight:700;font-size:14px;border-radius:12px;border:none;cursor:pointer;font-family:inherit}
+.btn-back{background:rgba(255,255,255,.15);color:#fff}
+.btn-dl{background:#1E8A4C;color:#fff}
+.btn-pr{background:#0F3D2E;color:#fff}
+.tip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 16px;margin-bottom:14px;font-size:13px;color:rgba(255,255,255,.85)}
+.editor-bar{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 18px;margin-bottom:14px}
+@media(max-width:600px){.r2,.r3{grid-template-columns:1fr}.btn-row{flex-direction:column}}
+/* PROPOSTA */
+.doc{background:#fff;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.6;color:#222}
+.doc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;border-bottom:1.5px solid #ddd}
+.doc-header-right{font-size:10pt;color:#555}
+.doc-body{padding:32px 44px}
+.doc h1{font-size:18pt;font-weight:700;color:#222;margin:0 0 6px}
+.doc .sub{font-style:italic;color:#444;font-size:10pt;margin-bottom:24px}
+.doc h2{font-size:13pt;font-weight:700;color:#00664f;margin:22px 0 10px;border-bottom:1px solid #ddd;padding-bottom:4px}
+.doc h3{font-size:11pt;font-weight:700;margin:14px 0 6px}
+.doc p{margin:5px 0;font-size:11pt}
+.doc ul{padding-left:20px;margin:5px 0}
+.doc ul li{margin-bottom:3px;font-size:11pt}
+.doc .nota{font-size:9pt;color:#666;font-style:italic;margin:4px 0}
+.doc .secao-title{font-size:12pt;font-weight:700;margin:16px 0 8px;text-transform:uppercase}
+.doc .validade{font-size:12pt;font-weight:700;margin:14px 0 6px}
+.doc .rodape{border-top:1px solid #ddd;padding-top:16px;margin-top:28px;font-size:9.5pt;color:#555;font-style:italic;text-align:center}
+.doc a{color:#1155CC}
+.doc .considerando{background:#f9f9f9;border-left:3px solid #00664f;padding:12px 16px;margin:16px 0;font-size:10.5pt;line-height:1.7}
+@media print{.doc-body{padding:20px 32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="app-header">
+    <div class="app-logo">
+      <!-- Logo Jusbrasil SVG inline fiel ao original -->
+      <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,5 95,92 5,92" fill="none"/>
+        <line x1="50" y1="8" x2="18" y2="88" stroke="#F5C100" stroke-width="22" stroke-linecap="round"/>
+        <line x1="50" y1="8" x2="82" y2="88" stroke="#4A90D9" stroke-width="22" stroke-linecap="round"/>
+        <ellipse cx="50" cy="11" rx="13" ry="13" fill="#3BAF6A"/>
+      </svg>
+    </div>
+    <div>
+      <div class="app-title">Gerador de Proposta</div>
+      <div class="app-sub">Jusbrasil · Hub de Soluções</div>
+    </div>
+    <button id="btnEditar" onclick="voltarForm()">← Editar</button>
+  </div>
+
+  <div id="formArea">
+    <div class="card">
+      <div class="sec">Dados do Cliente</div>
+      <div class="r2">
+        <div>
+          <label class="lbl">Tipo de Cliente</label>
+          <div class="tgl-row">
+            <button class="tgl sel" id="tB2B" onclick="setTipo('B2B')">B2B</button>
+            <button class="tgl" id="tB2G" onclick="setTipo('B2G')">B2G</button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl">Nome do Cliente / Título do Deal</label>
+          <input id="deal" placeholder="Ex: Escritório Martins & Associados" oninput="check()"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Pacote e Plano</div>
+      <div class="r2" style="margin-bottom:14px">
+        <div>
+          <label class="lbl">Pacote</label>
+          <select id="pacote" onchange="onPacChange()">
+            <option value="Essencial">Essencial — até 5 usuários</option>
+            <option value="Profissional">Profissional — até 10 usuários</option>
+            <option value="Equipes">Equipes — até 15 usuários</option>
+            <option value="Corporativo">Corporativo — a partir de 16 usuários</option>
+          </select>
+        </div>
+        <div id="planoWrap">
+          <label class="lbl">Plano</label>
+          <select id="plano" onchange="recalc()">
+            <option>Básico</option>
+            <option>Avançado</option>
+            <option>Avançado + Jus IA</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CORPORATIVO -->
+      <div id="corpArea" style="display:none">
+        <div class="r2" style="margin-bottom:14px">
+          <div><label class="lbl">Nº de Usuários</label><input id="cU" type="number" placeholder="Ex: 25" oninput="recalc()"/></div>
+          <div>
+            <label class="lbl">Plano</label>
+            <select id="cPla" onchange="recalc()">
+              <option value="">Selecione…</option>
+              <option>Básico</option><option>Avançado</option><option>Avançado + Jus IA</option>
+              <option>Avançado + Acesso Institucional</option>
+              <option>Avançado + Jus IA + Acesso Institucional</option>
+            </select>
+          </div>
+        </div>
+        <div id="corpValsBox" class="vbox verde" style="display:none">
+          <div class="vt">Valores calculados automaticamente</div>
+          <div class="vrow" id="corpValsRow"></div>
+        </div>
+        <div class="vbox cinza">
+          <div class="vt">Personalizar valores (opcional)</div>
+          <div class="r3">
+            <div><label class="lbl">Mensal (R$)</label><input id="cVM" type="number" step=".01" placeholder="auto" oninput="recalc()"/></div>
+            <div><label class="lbl">Anual (R$)</label><input id="cVA" type="number" step=".01" placeholder="auto" oninput="recalc()"/></div>
+            <div><label class="lbl">Bianual (R$)</label><input id="cVB" type="number" step=".01" placeholder="auto" oninput="recalc()"/></div>
+            <div><label class="lbl">Desc. M (%)</label><input id="cPM" type="number" placeholder="auto" oninput="recalc()"/></div>
+            <div><label class="lbl">Desc. A (%)</label><input id="cPA" type="number" placeholder="auto" oninput="recalc()"/></div>
+            <div><label class="lbl">Desc. B (%)</label><input id="cPB" type="number" placeholder="auto" oninput="recalc()"/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VALORES NÃO-CORP -->
+      <div id="valsArea">
+        <div id="valsBox" class="vbox verde" style="display:none">
+          <div style="display:flex;align-items:center;margin-bottom:9px">
+            <span class="vt" id="valsTitle" style="margin-bottom:0"></span>
+            <span id="badgeTipo"></span>
+          </div>
+          <div class="vrow" id="valsRow"></div>
+        </div>
+
+        <div id="b2bDesc" class="vbox amber" style="display:none">
+          <div class="vt">Desconto negociado <span class="badge-neg">B2B — editável</span></div>
+          <div class="r3">
+            <div><label class="lbl">Desconto mensal (%)</label><input id="b2bPctM" type="number" min="0" max="100" placeholder="padrão tabela" oninput="recalc()"/></div>
+            <div><label class="lbl">Desconto anual (%)</label><input id="b2bPctA" type="number" min="0" max="100" placeholder="padrão tabela" oninput="recalc()"/></div>
+            <div><label class="lbl">Desconto bianual (%)</label><input id="b2bPctB" type="number" min="0" max="100" placeholder="padrão +5pp" oninput="recalc()"/></div>
+          </div>
+        </div>
+
+        <div id="b2gFixo" class="vbox" style="display:none;background:#E8F5EE;border:1px solid #A8DFC0">
+          <div class="vt" style="color:#0F3D2E">Valores B2G <span class="badge-fixo">fixos — tabela padrão</span></div>
+          <p style="font-size:12px;color:#3D5A50">Descontos B2G aplicados automaticamente conforme tabela Jusbrasil.</p>
+        </div>
+
+        <div id="iaBox" class="vbox azul" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="vt" id="iaTitle" style="margin-bottom:0"></div>
+            <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#1565C0;cursor:pointer;font-weight:700">
+              <input type="checkbox" id="chkIA" checked onchange="recalc()"/> Incluir na proposta
+            </label>
+          </div>
+          <div class="vrow" id="iaRow"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Responsável &amp; Validade</div>
+      <div class="r3" style="margin-bottom:14px">
+        <div style="grid-column:span 2"><label class="lbl">Nome do Responsável</label><input id="nome" placeholder="Seu nome" oninput="check()"/></div>
+        <div><label class="lbl">Validade (dias)</label><input id="val" type="number" value="15" min="1"/></div>
+      </div>
+      <div><label class="lbl">E-mail</label><input id="email" placeholder="nome@jusbrasil.com.br" oninput="check()"/></div>
+    </div>
+
+    <button class="btn-go" id="btnGo" onclick="gerar()" disabled>Visualizar Proposta →</button>
+    <div class="hint" id="hintTxt">Preencha nome do cliente, responsável e e-mail para continuar.</div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="previewArea" style="display:none">
+    <div class="btn-row">
+      <button class="btn-back" onclick="voltarForm()">← Nova Proposta</button>
+      <button class="btn-dl" onclick="baixar()">⬇ Baixar HTML</button>
+      <button class="btn-pr" onclick="imprimir()">🖨 Imprimir / Salvar PDF</button>
+    </div>
+    <div class="tip">💡 <strong>Para PDF:</strong> clique "Imprimir / Salvar PDF" → destino <strong>"Salvar como PDF"</strong> → desmarque "Cabeçalhos e rodapés".</div>
+    <div class="editor-bar">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="color:#fff;font-weight:700;font-size:13px">✏️ Edição direta da proposta</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="toggleEdit(true)" id="btnEditOn" style="padding:6px 14px;background:#1E8A4C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">Ativar edição</button>
+          <button onclick="toggleEdit(false)" id="btnEditOff" style="padding:6px 14px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;display:none">Desativar edição</button>
+        </div>
+      </div>
+      <div id="editTip" style="font-size:12px;color:rgba(255,255,255,.6);display:none">✅ Clique em qualquer texto da proposta e edite livremente.</div>
+    </div>
+    <div id="docWrap"></div>
+  </div>
+</div>
+
+<script>
+// ─── LOGO JUSBRASIL (base64 inline, fiel ao original) ──────────────────
+// SVG da logo Jusbrasil como string para embutir na proposta
+const LOGO_SVG = `<svg width="160" height="32" viewBox="0 0 480 96" xmlns="http://www.w3.org/2000/svg">
+  <line x1="30" y1="90" x2="58" y2="10" stroke="#F5C100" stroke-width="26" stroke-linecap="round"/>
+  <line x1="58" y1="10" x2="86" y2="90" stroke="#4A90D9" stroke-width="26" stroke-linecap="round"/>
+  <ellipse cx="58" cy="12" rx="18" ry="18" fill="#3BAF6A"/>
+  <text x="106" y="72" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="52" fill="#1a1a1a">Jusbrasil</text>
+</svg>`;
+
+// ─── PREÇO BASE POR USUÁRIO ───────────────────────────────────────────────
+const PU = {"Básico":58.90,"Avançado":98.90,"Avançado + Jus IA":138.90,"Avançado + Acesso Institucional":98.90,"Avançado + Jus IA + Acesso Institucional":138.90};
+const PAC_USR = {Essencial:5,Profissional:10,Equipes:15};
+
+const AVULSO = {
+  Essencial:   {"Básico":{m:294.50,mD:279.78,pM:5},"Avançado":{m:494.50,mD:445.05,pM:10},"Avançado + Jus IA":{m:694.50,mD:659.78,pM:5}},
+  Profissional:{"Básico":{m:589.00,mD:500.65,pM:15},"Avançado":{m:989.00,mD:791.20,pM:20},"Avançado + Jus IA":{m:1389.00,mD:1250.10,pM:10}},
+  Equipes:     {"Básico":{m:883.50,mD:795.15,pM:10},"Avançado":{m:1483.50,mD:1186.80,pM:20},"Avançado + Jus IA":{m:2083.50,mD:1875.15,pM:10}},
+};
+
+const B2G_DESC = {
+  Essencial:   {"Básico":{pA:15,pB:20},"Avançado":{pA:20,pB:25},"Avançado + Jus IA":{pA:5,pB:10}},
+  Profissional:{"Básico":{pA:30,pB:35},"Avançado":{pA:35,pB:40},"Avançado + Jus IA":{pA:10,pB:15}},
+  Equipes:     {"Básico":{pA:30,pB:35},"Avançado":{pA:35,pB:40},"Avançado + Jus IA":{pA:10,pB:15}},
+};
+
+const CORP_PU={"Básico":{pu:58.90,pA:35,pB:40},"Avançado":{pu:98.90,pA:35,pB:40},"Avançado + Jus IA":{pu:138.90,pA:15,pB:20},"Avançado + Acesso Institucional":{pu:98.90,pA:35,pB:40},"Avançado + Jus IA + Acesso Institucional":{pu:138.90,pA:15,pB:20}};
+const IA_UP={"Básico":"Avançado + Jus IA","Avançado":"Avançado + Jus IA"};
+
+const fmt=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const fP=v=>v+"%";
+let tipo="B2B";
+
+function setTipo(t){
+  tipo=t;
+  document.getElementById("tB2B").classList.toggle("sel",t==="B2B");
+  document.getElementById("tB2G").classList.toggle("sel",t==="B2G");
+  if(!isCorp()){
+    document.getElementById("b2bDesc").style.display=t==="B2B"?"":"none";
+    document.getElementById("b2gFixo").style.display=t==="B2G"?"":"none";
+  }
+  recalc();
+}
+
+function isCorp(){return document.getElementById("pacote").value==="Corporativo";}
+
+function onPacChange(){
+  const c=isCorp();
+  document.getElementById("corpArea").style.display=c?"":"none";
+  document.getElementById("valsArea").style.display=c?"none":"";
+  document.getElementById("planoWrap").style.display=c?"none":"";
+  if(!c){
+    document.getElementById("b2bDesc").style.display=tipo==="B2B"?"":"none";
+    document.getElementById("b2gFixo").style.display=tipo==="B2G"?"":"none";
+  }
+  recalc();
+}
+
+function calcV(pac,pla){
+  const av=AVULSO[pac]?.[pla]; if(!av) return null;
+  const n=PAC_USR[pac]||5;
+  const pu=PU[pla]||58.90;
+  const aSD=pu*n*12, bSD=pu*n*24;
+  let pA,pB,pM,mD;
+  if(tipo==="B2G"){
+    const d=B2G_DESC[pac]?.[pla]||{pA:15,pB:20};
+    pA=d.pA;pB=d.pB;pM=av.pM;mD=av.mD;
+  } else {
+    const vA=document.getElementById("b2bPctA").value;
+    const vB=document.getElementById("b2bPctB").value;
+    const vM=document.getElementById("b2bPctM").value;
+    const ref=B2G_DESC[pac]?.[pla]||{pA:15,pB:20};
+    pA=vA!==""?+vA:ref.pA;
+    pB=vB!==""?+vB:ref.pB;
+    pM=vM!==""?+vM:av.pM;
+    mD=av.m*(1-pM/100);
+  }
+  const aC=aSD*(1-pA/100), bC=bSD*(1-pB/100);
+  return{m:av.m,mD,pM,aSD,bSD,pA,pB,aC,bC,mA:aC/12,mB:bC/24};
+}
+
+function calcCorp(n,pla){
+  const d=CORP_PU[pla]; if(!d||!n) return null;
+  const m=d.pu*n,aSD=m*12,bSD=m*24,aC=aSD*(1-d.pA/100),bC=bSD*(1-d.pB/100);
+  return{m,aSD,bSD,pA:d.pA,pB:d.pB,aC,bC,mA:aC/12,mB:bC/24};
+}
+
+function vi_html(label,main,cl,sub,strike){
+  return`<div class="vi"><div class="vi-l">${label}</div>${strike?`<div class="vi-st">${strike}</div>`:""}<div class="vi-m ${cl||""}">${main}</div>${sub?`<div class="vi-s">${sub}</div>`:""}</div>`;
+}
+
+function recalc(){
+  if(isCorp()){
+    const n=+document.getElementById("cU").value,pla=document.getElementById("cPla").value;
+    const box=document.getElementById("corpValsBox"),auto=calcCorp(n,pla);
+    if(!auto){box.style.display="none";check();return;}
+    box.style.display="";
+    const cVM=document.getElementById("cVM").value,cVA=document.getElementById("cVA").value,cVB=document.getElementById("cVB").value;
+    const m=cVM!==""?+cVM:auto.m,aC=cVA!==""?+cVA:auto.aC,bC=cVB!==""?+cVB:auto.bC;
+    document.getElementById("corpValsRow").innerHTML=
+      vi_html("Mensal sem desc.","","",'',fmt(auto.m))+
+      vi_html(`Anual (${fP(auto.pA)} desc.)`,fmt(aC),"c-v",fmt(aC/12)+"/mês",fmt(auto.aSD))+
+      vi_html(`Bianual (${fP(auto.pB)} desc.)`,fmt(bC),"c-a",fmt(bC/24)+"/mês",fmt(auto.bSD));
+    check();return;
+  }
+  const pac=document.getElementById("pacote").value;
+  const pla=document.getElementById("plano").value;
+  const v=calcV(pac,pla);
+  if(v){
+    document.getElementById("valsBox").style.display="";
+    document.getElementById("valsTitle").textContent=`Valores · Plano ${pla}`;
+    document.getElementById("badgeTipo").innerHTML=tipo==="B2G"
+      ?`<span class="badge-fixo">B2G fixo</span>`
+      :`<span class="badge-neg">B2B negociável</span>`;
+    document.getElementById("valsRow").innerHTML=
+      vi_html("Mensal sem desconto","","",'',fmt(v.m))+
+      vi_html(`Valor Mensal (${fP(v.pA)} desc.)`,fmt(v.mA),"c-v","")+
+      vi_html(`Valor Anual (${fP(v.pA)} desc.)`,fmt(v.aC),"c-v",fmt(v.aSD))+
+      vi_html(`Valor Bianual (${fP(v.pB)} desc.)`,fmt(v.bC),"c-a",fmt(v.bSD));
+  } else {
+    document.getElementById("valsBox").style.display="none";
+  }
+  const iaP=IA_UP[pla];
+  if(iaP&&pla!=="Avançado + Jus IA"){
+    const refIA=B2G_DESC[pac]?.["Avançado + Jus IA"]||{pA:5,pB:10};
+    const n=PAC_USR[pac]||5;
+    const puIA=PU["Avançado + Jus IA"];
+    const aSD=puIA*n*12,bSD=puIA*n*24;
+    const aC=aSD*(1-refIA.pA/100),bC=bSD*(1-refIA.pB/100);
+    document.getElementById("iaBox").style.display="";
+    document.getElementById("iaTitle").textContent=`Opção com Jus IA · ${iaP}`;
+    document.getElementById("iaRow").innerHTML=
+      vi_html(`Anual (${fP(refIA.pA)} desc.)`,fmt(aC),"c-a",fmt(aC/12)+"/mês",fmt(aSD))+
+      vi_html(`Bianual (${fP(refIA.pB)} desc.)`,fmt(bC),"c-a",fmt(bC/24)+"/mês",fmt(bSD));
+  } else {
+    document.getElementById("iaBox").style.display="none";
+  }
+  check();
+}
+
+function check(){
+  const ok=document.getElementById("deal").value.trim()&&
+           document.getElementById("nome").value.trim()&&
+           document.getElementById("email").value.trim()&&
+           (!isCorp()||(document.getElementById("cU").value&&document.getElementById("cPla").value));
+  document.getElementById("btnGo").disabled=!ok;
+  document.getElementById("hintTxt").style.display=ok?"none":"";
+}
+
+const MS=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const DS=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+const hoje=()=>{const d=new Date();return`${DS[d.getDay()]}, ${d.getDate()} de ${MS[d.getMonth()]} de ${d.getFullYear()}`};
+const addD=n=>{const d=new Date();d.setDate(d.getDate()+n);return`${d.getDate()} de ${MS[d.getMonth()]} de ${d.getFullYear()}`};
+
+const DESC_PLANO={
+  "Básico":["Consulta, a cópia e o download de Jurisprudências, Diários Oficiais, Modelos e Peças;","Consulta de processos em todo o país, buscando por CPF, nome ou nº CNJ;","Acompanhamento e consulta de até 5 processos (por usuário), acesso aos autos, notificações por e-mail sobre novas movimentações."],
+  "Avançado":["Consulta, a cópia e o download de Jurisprudências, Diários Oficiais, Modelos e Peças;","Consulta a obras de editoras parceiras, permitindo localizar trechos específicos e copiar referências automaticamente em conformidade com a ABNT.","Acompanhamento de até 5 processos e consulta processual por nome, CPF e número CNJ*, acesso aos autos, notificações por e-mail sobre novas movimentações."],
+  "Avançado + Jus IA":["Consulta, a cópia e o download de Jurisprudências, Diários Oficiais, Modelos e Peças;","Consulta a obras de editoras parceiras, permitindo localizar trechos específicos e copiar referências automaticamente em conformidade com a ABNT.","Acompanhamento de até 5 processos e consulta processual por nome, CPF e número CNJ*, acesso aos autos, notificações por e-mail sobre novas movimentações;","Busca com IA: amparada na base de dados do Jusbrasil;","Criação de peças jurídicas de forma automatizada; e","Análise de documentos jurídicos."],
+  "Avançado + Acesso Institucional":["Consulta, a cópia e o download de Jurisprudências, Diários Oficiais, Modelos e Peças;","Consulta a obras de editoras parceiras, permitindo localizar trechos específicos e copiar referências automaticamente em conformidade com a ABNT.","Acompanhamento de até 5 processos e consulta processual por nome, CPF e número CNJ*, acesso aos autos, notificações por e-mail sobre novas movimentações;","Login automático à plataforma para usuários com o mesmo domínio de e-mail do adquirente."],
+  "Avançado + Jus IA + Acesso Institucional":["Consulta, a cópia e o download de Jurisprudências, Diários Oficiais, Modelos e Peças;","Consulta a obras de editoras parceiras, permitindo localizar trechos específicos e copiar referências automaticamente em conformidade com a ABNT.","Acompanhamento de até 5 processos e consulta processual por nome, CPF e número CNJ*, acesso aos autos, notificações por e-mail sobre novas movimentações;","Busca com IA: amparada na base de dados do Jusbrasil;","Criação de peças jurídicas de forma automatizada; e","Análise de documentos jurídicos.","Login automático à plataforma para usuários com o mesmo domínio de e-mail do adquirente."],
+};
+
+// ─── GERA PROPOSTA ────────────────────────────────────────────────────────
+function buildDoc(){
+  const corp=isCorp();
+  const deal=document.getElementById("deal").value;
+  const nome=document.getElementById("nome").value;
+  const email=document.getElementById("email").value;
+  const valid=+document.getElementById("val").value||15;
+  const pac=document.getElementById("pacote").value;
+  const pla=corp?document.getElementById("cPla").value:document.getElementById("plano").value;
+  const n=document.getElementById("cU").value;
+  const showIA=!corp&&document.getElementById("chkIA").checked;
+  const iaP=IA_UP[pla];
+  const showValEcon=tipo==="B2B"&&pla.includes("Jus IA");
+  const isInst=pla.includes("Institucional");
+  const isJusIA=pla.includes("Jus IA");
+  const isB2G=tipo==="B2G";
+
+  const dp=(DESC_PLANO[pla]||DESC_PLANO["Básico"]).map(d=>isInst?d.replace("usuários com",`${n||"XX"} usuários com`):d);
+  const pacUsers={Essencial:"5",Profissional:"10",Equipes:"15",Corporativo:n||"XX"};
+
+  let vM,vMd,vMpct,vA,vAsd,vApct,vB,vBsd,vBpct;
+  if(!corp){
+    const v=calcV(pac,pla);
+    if(v){vM=v.m;vMd=v.mA;vMpct=v.pA;vA=v.aC;vAsd=v.aSD;vApct=v.pA;vB=v.bC;vBsd=v.bSD;vBpct=v.pB;}
+  } else {
+    const auto=calcCorp(+n,pla);
+    const cVM=document.getElementById("cVM").value,cVA=document.getElementById("cVA").value,cVB=document.getElementById("cVB").value;
+    const cPM=document.getElementById("cPM").value,cPA=document.getElementById("cPA").value,cPB=document.getElementById("cPB").value;
+    vM=cVM!==""?+cVM:(auto?auto.m:null);
+    vA=cVA!==""?+cVA:(auto?auto.aC:null);
+    vB=cVB!==""?+cVB:(auto?auto.bC:null);
+    vMd=vM;vMpct=cPM!==""?+cPM:0;
+    vAsd=auto?auto.aSD:null;vApct=cPA!==""?+cPA:(auto?auto.pA:0);
+    vBsd=auto?auto.bSD:null;vBpct=cPB!==""?+cPB:(auto?auto.pB:0);
+  }
+
+  let viHTML="";
+  if(showIA&&iaP){
+    const refIA=B2G_DESC[pac]?.["Avançado + Jus IA"]||{pA:5,pB:10};
+    const nU=PAC_USR[pac]||5;
+    const puIA=PU["Avançado + Jus IA"];
+    const avIA=AVULSO[pac]?.["Avançado + Jus IA"];
+    const aSD=puIA*nU*12,bSD=puIA*nU*24;
+    const aC=aSD*(1-refIA.pA/100),bC=bSD*(1-refIA.pB/100);
+    const dpIA=DESC_PLANO["Avançado + Jus IA"]||[];
+    viHTML=`
+    <div style="margin-top:20px;padding-top:14px;border-top:1px solid #ddd">
+      <p><strong>Plano: ${iaP} (opção)</strong></p>
+      <ul>${dpIA.map(d=>`<li>${d}</li>`).join("")}</ul>
+      <p class="nota">* a consulta processual por nome, CPF e número CNJ é limitada a buscas de baixo volume.</p>
+      <p style="font-weight:700;margin:10px 0 4px">Valores promocionais de lançamento do Jus IA (válidos por período determinado):</p>
+      <p>Boleto mensal: de ${avIA?fmt(avIA.m):"R$ [=]"} por <strong>${avIA?fmt(avIA.mD):"R$ [=]"} (${avIA?avIA.pM:0}% de desconto);</strong></p>
+      <p>Boleto anual: de ${fmt(aSD)} por <strong>${fmt(aC)} (${fP(refIA.pA)} de desconto);</strong></p>
+      <p>Boleto bienal: de ${fmt(bSD)} por <strong>${fmt(bC)} (${fP(refIA.pB)} de desconto);</strong></p>
+      <p class="nota"><em>Atenção: <strong>os valores e descontos apresentados já consideram os mais de 40% de desconto atualmente aplicados sobre o valor promocional da JUS I.A por usuário (de R$ 208,90 por R$ 138,90).</strong></em></p>
+    </div>`;
+  }
+
+  const boletosPrincipal=()=>`
+    ${isJusIA?`<p style="font-weight:700;margin:10px 0 4px">Valores promocionais de lançamento do Jus IA (válidos por período determinado):</p>`:""}
+    <p>Boleto mensal: de ${vM?fmt(vM):"R$ [=]"} por <strong>${vMd?fmt(vMd):"R$ [=]"} (${vMpct||0}% de desconto);</strong></p>
+    <p>Boleto anual: de ${vAsd?fmt(vAsd):"R$"} por <strong>${vA?fmt(vA):"R$"} (${vApct}% de desconto);</strong></p>
+    <p>Boleto bienal: de ${vBsd?fmt(vBsd):"R$"} por <strong>${vB?fmt(vB):"R$"} (${vBpct}% de desconto);</strong></p>
+    ${isJusIA?`<p class="nota"><em>Atenção: <strong>os valores e descontos apresentados já consideram os mais de 40% de desconto atualmente aplicados sobre o valor promocional da JUS I.A por usuário (de R$ 208,90 por R$ 138,90).</strong></em></p>`:""}`;
+
+  // Bloco "Considerando que" — exclusivo B2G
+  const considerandoHTML = isB2G ? `
+    <p style="margin-top:18px;font-weight:700;color:#00664f">Considerando que:</p>
+    <div class="considerando">
+      <p>i. O Jusbrasil é titular da plataforma "Jusbrasil" (https://www.jusbrasil.com.br) que, dentre outros, otimiza o acesso da população em geral a conteúdo jurídico, incluindo advogados e profissionais do direito, além de disponibilizar informações jurídicas públicas referentes à legislação e ao judiciário brasileiro.</p>
+      <br/>
+      <p>ii. A/O <strong>${deal}</strong> realizou análise de mercado com o objetivo de avaliar a viabilidade de realizar contratação direta na modalidade escolhida, dispensa ou inexigibilidade, conforme art. 74 e 75 da Lei 14.133 ou art. 24 e 25 da Lei 8.666/93.</p>
+    </div>` : "";
+
+  return `
+<div class="doc">
+  <div class="doc-header">
+    <div>${LOGO_SVG}</div>
+    <div class="doc-header-right">Proposta <strong>Jusbrasil</strong> - Hub de Soluções</div>
+  </div>
+  <div class="doc-body">
+
+    <h1>${deal}</h1>
+
+    <h2>Proponente</h2>
+    <p><strong>Razão social:</strong> Goshme Soluções para Internet LTDA.</p>
+    <p><strong>Nome fantasia:</strong> Jusbrasil</p>
+    <p><strong>CNPJ:</strong> 07.112.529/000146</p>
+    <p><strong>Inscrição estadual:</strong> isento</p>
+    <p><strong>Inscrição municipal:</strong> 250.883/001-13</p>
+    <p><strong>Endereço:</strong> Avenida Tancredo Neves, 620, Edifício Torre Empresarial Mundo Plaza, Loja 3305, Caminho das Árvores, Salvador/BA, CEP 41820-020</p>
+
+    ${considerandoHTML}
+
+    <h2>Detalhamento dos Produtos e Vantagens</h2>
+    <h3>▲ PRODUTOS JUSBRASIL</h3>
+    <p><strong>Pesquisa Jurídica</strong></p>
+    <p>Os planos para multiusuários do Jusbrasil adicionam <strong>inteligência</strong> e <strong>praticidade</strong> à sua rotina ao facilitar as tarefas do dia a dia de sua instituição, e com isso você consegue:</p>
+    <p><strong>Economia de tempo:</strong> oferecemos um repositório único com todas as informações que você e sua equipe precisam para criar argumentações eficientes em menos tempo;</p>
+    <p><strong>Aumento de produtividade:</strong> encontre as informações jurídicas certas para sua busca, de forma fácil e rápida, em um só lugar;</p>
+    <p><strong>O acervo mais completo de Jurisprudência:</strong> cópias ilimitadas de decisões, acórdãos e ementas já formatadas e prontas para utilizar em suas argumentações. São mais de 560 sistemas de tribunais e 40 milhões de ementas ao seu dispor!</p>
+    <p><strong>Modelos para facilitar o seu dia a dia:</strong> aposte no que já deu certo! Com uma simples busca, você encontra, copia e faz o download de modelos validados pela maior comunidade jurídica do mundo. São mais de 100 mil petições, contestações e procurações disponíveis para acesso;</p>
+    <p><strong>Tenha as melhores referências de peças:</strong> as peças processuais disponibilizadas no Jusbrasil são ótimos documentos que podem ser utilizados como referência para a escrita de petições e elaboração de teses, consulta de fundamentos e entendimento de argumentos e conceitos jurídicos aplicados em casos reais.</p>
+    <p>&nbsp;✔ <strong>Acervo:</strong> Mais de 60 milhões de peças;</p>
+    <p>&nbsp;✔ <strong>Fontes:</strong> 94 fontes (incluindo STJ, STF e TST).</p>
+    <p><strong>Busca em Diários Oficiais:</strong> contém todas as publicações relacionadas aos Diários da União, dos Estados e dos Municípios. São 363 diários oficiais disponíveis para pesquisar, navegar pelas páginas e realizar o download.</p>
+    <p><strong>Pesquisa doutrinária integrada:</strong> O Jusbrasil Doutrina reúne um acervo com mais de 1.700 obras jurídicas licenciadas, permitindo ao usuário consultar, de forma precisa e contextualizada, trechos relevantes de livros jurídicos diretamente conectados a outros conteúdos da plataforma — como jurisprudência, legislação, peças, artigos e notícias.</p>
+    <p style="margin:4px 0 0 0">Abrangência das buscas: DOU todas as seções (1890-2025) · DJU seções 1, 2 e 3 (2004-2007) · Legislação (1970-2025).</p>
+    <p style="margin-top:8px">Reunimos mais de <strong>110 milhões de julgados</strong> e milhares de súmulas, de <strong>96 sistemas de tribunais</strong> e com ementa pré-formatada para citação.</p>
+
+    <p style="margin-top:14px"><strong>Jus IA</strong></p>
+    <p><strong>Assistente jurídico:</strong> Com a maior base jurídica do país e inteligência artificial calibrada para oferecer respostas confiáveis, o Jus IA permite buscas jurídicas precisas, geração automatizada de peças com embasamento sólido e análise detalhada de documentos em segundos — tudo com a segurança e previsibilidade que o Direito exige.</p>
+    <p>&nbsp;✔ <strong>Busca jurídica:</strong> receba as respostas adequadas para sua pesquisa jurídica com jurisprudência real;</p>
+    <p>&nbsp;✔ <strong>Geração automatizada de peças:</strong> personalize e crie documentos com eficiência, utilizando modelos adaptados ao contexto jurídico brasileiro;</p>
+    <p>&nbsp;✔ <strong>Análise de documentos:</strong> tenha confiança na análise de documentos, assegurando a conformidade do conteúdo com citações relevantes.</p>
+
+    <h2>Forma de acesso</h2>
+    <p>Cada acesso/usuário é individual, contempla um único usuário e é intransferível, não sendo permitido o compartilhamento de login (veja mais detalhes em nossos <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534072">Termos de Uso Jusbrasil</a> e <a href="https://solucoes.jusbrasil.com.br/termos-de-uso">Termos de Uso Jusbrasil Soluções</a>).</p>
+    <p><em>Padrão - Login e senha.</em> O acesso é necessariamente feito por login e senha no site do Jusbrasil (<strong>https://www.jusbrasil.com.br/</strong>), determinados pelo adquirente e/ou pelos usuários indicados. A equipe Jusbrasil se encarrega de habilitar as funcionalidades para os usuários solicitados em conjunto com o usuário administrador.</p>
+    ${isInst?`<p style="margin-top:8px"><em>Adicional - Pacote Institucional.</em> A partir de certa quantidade de usuários do plano corporativo, o acesso pode ser feito por meio do Pacote Institucional (<em>magic link</em>), o qual permite cadastro e login automático no site do Jusbrasil a usuários com o mesmo domínio de e-mail do adquirente (limitados à quantidade de usuários contratados).</p>`:""}
+
+    <h2>Planos</h2>
+    <h3>▲ PRODUTOS JUSBRASIL</h3>
+    <p><strong>Pesquisa Jurídica - Básico:</strong> permite a consulta, a cópia e o download de Jurisprudência, Diários Oficiais, Modelos e Peças, além de acompanhamento de até 5 processos e consulta processual por nome, CPF e número CNJ*, acesso aos autos¹, notificações por e-mail sobre novas movimentações.</p>
+    <p class="nota">* A consulta processual por nome, CPF e número CNJ é limitada a buscas de baixo volume.</p>
+    <p class="nota">¹ Determinadas funcionalidades dos planos são disponibilizadas apenas para Pessoas Usuárias com Inscrição na OAB.</p>
+    <p style="margin-top:8px"><strong>Pesquisa Jurídica - Avançado:</strong> além do permitido no plano Básico, também confere acesso a: consulta e leitura de obras de editoras parceiras, permitindo localizar trechos específicos e copiar referências automaticamente em conformidade com a ABNT.</p>
+    <p style="margin-top:8px"><strong>Pesquisa Jurídica - Avançado + Jus IA:</strong> além do permitido no plano Avançado, confere acesso liberado às habilidades do assistente jurídico Jus IA, que incluem fazer perguntas jurídicas, criar documentos e analisar referências.</p>
+    ${showValEcon?`<p style="margin-top:10px;background:#FFF8E6;border:1px solid #F5D88C;border-radius:6px;padding:10px 14px"><strong>Benefício exclusivo B2B:</strong> O Jusbrasil possui uma parceria com o Valor Econômico. Como assinante dos <strong>planos anuais ou bianuais</strong>, cada usuário ganha <strong>1 ano gratuito</strong> de acesso digital ao Valor Econômico enquanto a assinatura Jusbrasil estiver vigente.</p>`:""}
+    <p style="margin-top:8px;font-style:italic">Preços baseados no tipo de plano e na quantidade de logins contratados.</p>
+
+    <h2>Condições Comerciais — Jusbrasil para ${isB2G ? "Órgãos Públicos" : "Organizações"}</h2>
+    <p class="secao-title">PACOTE ${pac.toUpperCase()}</p>
+    <ul>
+      <li>Até ${pacUsers[pac]} usuários</li>
+      <li>Pagamento via boleto ou transferência bancária</li>
+      <li>Ambiente de gestão de contas e relatórios de uso</li>
+      <li>Suporte técnico exclusivo para clientes corporativos</li>
+    </ul>
+    <p style="margin-top:12px"><strong>Plano: ${pla}</strong></p>
+    <ul>${dp.map(d=>`<li>${d}</li>`).join("")}</ul>
+    <p class="nota">* a consulta processual por nome, CPF e número CNJ é limitada a buscas de baixo volume. Caso haja interesse na consulta processual de alto volume, favor entrar em contato com o representante comercial.</p>
+    ${boletosPrincipal()}
+    ${viHTML}
+    <p style="margin-top:14px"><strong>Forma de pagamento:</strong> Boleto no valor anual/bienal. Declaramos que todos os impostos, fretes e demais gastos estão incluídos.</p>
+    <p class="nota"><em>Atenção: os valores e descontos apresentados permanecem até a data de validade da proposta, sendo passíveis de alteração posteriormente.</em></p>
+
+    <h2>Condições Técnicas</h2>
+    <p><strong>Prazo para habilitação das funcionalidades:</strong> as funcionalidades atreladas ao plano contratado serão liberadas em até 7 (sete) dias contados a partir do recebimento, pelo Jusbrasil, da confirmação do pagamento/nota de empenho.</p>
+    <p><strong>Suporte técnico:</strong> o Jusbrasil disponibiliza suporte técnico, de forma assíncrona para o e-mail suportesolucoes@jusbrasil.com.br, de segunda a sexta-feira em dias úteis, de 9 (nove) às 18 (dezoito) horas (horário de Brasília), com prazo de até 72 (setenta e duas) horas para primeira resposta. O Jusbrasil não disponibiliza suporte técnico presencial ou por meio de atendimento telefônico.</p>
+    <p><strong>Limitação de responsabilidade:</strong> o Jusbrasil não será responsabilizado pelos danos e prejuízos decorrentes das situações descritas na cláusula 7 nos <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534072">Termos de Uso Jusbrasil</a> e na cláusula 6.2 nos <a href="https://solucoes.jusbrasil.com.br/termos-de-uso">Termos de Uso Jusbrasil Soluções</a>. Em nenhuma hipótese o Jusbrasil será responsável por danos indiretos de qualquer tipo.</p>
+
+    <h2>Confidencialidade, Privacidade e Proteção de Dados</h2>
+    <p><strong>Sigilo de informações confidenciais.</strong> Deverá ser guardado e mantido o sigilo e a confidencialidade de todas as informações e/ou dados de natureza confidencial que venham a ser divulgadas ou aos quais venham a ter acesso sob e em função de eventual prestação de serviços, exceto informações que já sejam públicas ou se tornem sem ingerência de qualquer das partes ou violação de dever de sigilo.</p>
+    <p><strong>Dados públicos.</strong> O Jusbrasil realiza tratamento de dados públicos, seguindo as disposições dos arts. 7º, §3º e §7º, e 11 da Lei nº 13.709/2018 (Lei Geral de Proteção de Dados), considerando a finalidade, a boa-fé e o interesse público que justificaram a disponibilização original de tais dados.</p>
+    <p><strong>Política de Privacidade Jusbrasil.</strong> O Jusbrasil observará o disposto na <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534212">Política de Privacidade</a>. Eventuais limitações ou imposições que contrariem a Política de Privacidade não serão aplicadas.</p>
+    <p><strong>Armazenamento e exclusão de dados.</strong> Usuários poderão a qualquer momento solicitar a exclusão dos dados cadastrais compartilhados seguindo o passo a passo descrito no artigo "<a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360050090592">Como excluir definitivamente sua conta do Jusbrasil</a>". O Jusbrasil poderá manter dados armazenados para cumprimento de obrigação legal ou outra hipótese permitida por lei.</p>
+
+    <div style="margin-top:24px">
+      <p><strong>Responsável</strong></p>
+      <p>${email}</p>
+      <p>${nome} — Representante Comercial</p>
+      <p class="validade" style="margin-top:8px">Validade da proposta: ${valid} dias</p>
+    </div>
+
+    <div class="rodape">
+      <p>${hoje()}</p>
+      <br/>
+      <p><em>Ao aceitar a presente proposta para os Produtos Jusbrasil, você declara que leu e concorda com os <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534072">Termos de Uso</a>, com a <a href="https://privacidade-jusbrasil.zendesk.com/hc/pt-br/articles/31145187022996">Política de Privacidade</a> e com o <a href="https://conteudo.jusbrasil.com.br/termo-de-adesao-jusbrasil-organizacoes">Contrato de Prestação de Serviços Jusbrasil para Pessoas Jurídicas</a>.</em></p>
+      <br/>
+      <p><em>Ao aceitar a presente proposta para os Produtos Jusbrasil Soluções, você declara que leu e concorda com os <a href="https://solucoes.jusbrasil.com.br/termos-de-uso">Termos de Uso</a>, o <a href="https://solucoes.jusbrasil.com.br/contrato-de-prestacao-de-servicos">Contrato de Prestação de Serviços Jusbrasil Soluções</a> e o <a href="https://solucoes.jusbrasil.com.br/termo-de-tratamento-de-dados-pessoais">Termo de Tratamento de Dados Pessoais</a>.</em></p>
+    </div>
+  </div>
+</div>`;
+}
+
+function getDocHTML(){
+  const dw=document.getElementById("docWrap");
+  const css=document.querySelector('style').textContent;
+  return`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Proposta Jusbrasil</title><style>${css}body{background:#fff;padding:0}@media print{body{margin:0}}</style></head><body>${dw.innerHTML}</body></html>`;
+}
+
+function toggleEdit(on){
+  const doc=document.getElementById("docWrap");
+  doc.contentEditable=on?"true":"false";
+  doc.style.outline=on?"2px dashed rgba(30,138,76,.4)":"none";
+  document.getElementById("btnEditOn").style.display=on?"none":"";
+  document.getElementById("btnEditOff").style.display=on?"":"none";
+  document.getElementById("editTip").style.display=on?"":"none";
+  if(on) doc.focus();
+}
+
+function gerar(){
+  document.getElementById("formArea").style.display="none";
+  document.getElementById("previewArea").style.display="";
+  document.getElementById("btnEditar").style.display="";
+  document.getElementById("docWrap").innerHTML=buildDoc();
+  document.getElementById("docWrap").contentEditable="false";
+}
+
+function voltarForm(){
+  toggleEdit(false);
+  document.getElementById("formArea").style.display="";
+  document.getElementById("previewArea").style.display="none";
+  document.getElementById("btnEditar").style.display="none";
+}
+
+function baixar(){
+  const deal=document.getElementById("deal").value.replace(/[^a-zA-Z0-9]/g,"_");
+  const sufixo=tipo==="B2G"?"B2G":"B2B";
+  const b=new Blob([getDocHTML()],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);
+  a.download=`Proposta_Jusbrasil_${sufixo}_${deal}.html`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function imprimir(){
+  const w=window.open("","_blank");
+  if(!w){alert("Permita pop-ups para imprimir.");return;}
+  w.document.write(getDocHTML());w.document.close();setTimeout(()=>w.print(),500);
+}
+</script>
+</body>
+</html>
