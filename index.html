@@ -284,7 +284,7 @@ input:focus,select:focus{border-color:#1E8A4C}
           <div><label class="lbl">Modalidade de pagamento</label><select id="usModalidade" onchange="usRecalc()"><option value="mensal">Mensal</option><option value="anual" selected>Boleto único anual</option><option value="bienal">Boleto único bienal</option></select></div>
           <div id="usMesInicioWrap"><label class="lbl">Mês de início do contrato</label><select id="usMesInicio" onchange="usRecalc()"></select></div>
           <div id="usMesUpsellWrap"><label class="lbl">Mês do aditivo</label><select id="usMesUpsell" onchange="usRecalc()"></select></div>
-          <div id="usPagoWrap" style="grid-column:1/-1"><label class="lbl">Valor já pago pelo cliente (R$) — opcional</label><input id="usPago" type="number" min="0" placeholder="Tabela padrão" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Preencha apenas se o contrato vigente tiver precificação diferente da tabela.</span></div>
+          <div id="usPagoWrap" style="grid-column:1/-1"><label id="usPagoLbl" class="lbl">Valor já pago pelo cliente (R$) — opcional</label><input id="usPago" type="number" min="0" placeholder="Tabela padrão" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Preencha apenas se o contrato vigente tiver precificação diferente da tabela.</span></div>
           <div id="usCorpAtualWrap" style="display:none;grid-column:1/-1"><label class="lbl">Valor do contrato atual — Corporativo (R$) <span style="font-weight:400;color:#c0392b">obrigatório</span></label><input id="usCorpValAtual" type="number" min="0" placeholder="Valor total do ciclo vigente (anual ou bienal)" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Informe o valor total pago pelo cliente no ciclo atual.</span></div>
         </div>
         <div id="usValsAtual"></div>
@@ -800,16 +800,22 @@ function usRecalc(){
   // Visibilidade dos campos
   document.getElementById("usMesInicioWrap").style.display=showMeses?"":"none";
   document.getElementById("usMesUpsellWrap").style.display=showMeses?"":"none";
-  document.getElementById("usPagoWrap").style.display=(showMeses&&!corpAtual)?"":"none";
+  document.getElementById("usPagoWrap").style.display=(!corpAtual&&usTipo!=="B2G")?"":"none";
   document.getElementById("usCorpAtualUsrsWrap").style.display=corpAtual?"":"none";
   document.getElementById("usCorpAtualWrap").style.display=corpAtual?"":"none";
   document.getElementById("usCorpNovoWrap").style.display=corpNovo?"":"none";
 
-  // Placeholder do campo pago
-  if(showMeses&&!corpAtual){
+  // Label e placeholder do campo pago
+  if(!corpAtual&&usTipo!=="B2G"){
     const v=usCalcV(pacAtual,nivelAtual);
     const tv=v?v[modalidade]:0;
-    document.getElementById("usPago").placeholder="Deixe em branco para usar o valor tabelado ("+fmt(tv)+")";
+    if(modalidade==="mensal"){
+      document.getElementById("usPagoLbl").textContent="Valor mensal negociado (R$) — opcional";
+      document.getElementById("usPago").placeholder="Deixe em branco para usar o valor tabelado ("+fmt(tv)+"/mês)";
+    } else {
+      document.getElementById("usPagoLbl").textContent="Valor já pago pelo cliente (R$) — opcional";
+      document.getElementById("usPago").placeholder="Deixe em branco para usar o valor tabelado ("+fmt(tv)+")";
+    }
   }
 
   // Box de valores — Contrato Vigente
@@ -856,6 +862,9 @@ function usRecalc(){
   // Helpers de valor
   function getAtualVal(mod){
     if(corpAtual) return parseFloat(document.getElementById("usCorpValAtual").value)||0;
+    const pagoStr=document.getElementById("usPago").value.trim();
+    const pagoManual=parseFloat(pagoStr);
+    if(!isNaN(pagoManual)&&pagoStr!=="") return pagoManual;
     const v=usCalcV(pacAtual,nivelAtual); return v?v[mod]:0;
   }
   function getNovoVal(mod){
@@ -954,6 +963,9 @@ function usBuildDoc(){
 
   function docValAtual(mod){
     if(corpAtualDoc) return parseFloat(document.getElementById("usCorpValAtual").value)||0;
+    const pagoStr=document.getElementById("usPago").value.trim();
+    const pagoManual=parseFloat(pagoStr);
+    if(!isNaN(pagoManual)&&pagoStr!=="") return pagoManual;
     const v=usCalcV(pacAtual,nivelAtual); return v?v[mod]:0;
   }
   function docValNovo(mod){
