@@ -343,7 +343,7 @@ input:focus,select:focus{border-color:#1E8A4C}
 
 <script>
 // ─── LOGO JUSBRASIL ──────────────────────────────────────────────────────
-const LOGO_SVG = `<svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 95,92 5,92" fill="none"/><line x1="50" y1="8" x2="18" y2="88" stroke="#F5C100" stroke-width="22" stroke-linecap="round"/><line x1="50" y1="8" x2="82" y2="88" stroke="#4A90D9" stroke-width="22" stroke-linecap="round"/><ellipse cx="50" cy="11" rx="13" ry="13" fill="#3BAF6A"/></svg>`;
+const LOGO_SVG = `<div style="display:flex;align-items:center;gap:10px"><svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 95,92 5,92" fill="none"/><line x1="50" y1="8" x2="18" y2="88" stroke="#F5C100" stroke-width="22" stroke-linecap="round"/><line x1="50" y1="8" x2="82" y2="88" stroke="#4A90D9" stroke-width="22" stroke-linecap="round"/><ellipse cx="50" cy="11" rx="13" ry="13" fill="#3BAF6A"/></svg><span style="font-size:20px;font-weight:700;color:#444;font-family:Arial,sans-serif;letter-spacing:-.3px">Jusbrasil</span></div>`;
 
 // ─── PREÇO BASE POR USUÁRIO ───────────────────────────────────────────────
 const PU = {"Básico":58.90,"Avançado":98.90,"Avançado + Jus IA":138.90,"Avançado + Acesso Institucional":98.90,"Avançado + Jus IA + Acesso Institucional":138.90};
@@ -668,6 +668,7 @@ function buildDoc(){
       <p><em>Ao aceitar a presente proposta para os Produtos Jusbrasil, você declara que leu e concorda com os <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534072">Termos de Uso</a>, com a <a href="https://privacidade-jusbrasil.zendesk.com/hc/pt-br/articles/31145187022996">Política de Privacidade</a> e com o <a href="https://conteudo.jusbrasil.com.br/termo-de-adesao-jusbrasil-organizacoes">Contrato de Prestação de Serviços Jusbrasil para Pessoas Jurídicas</a>.</em></p>
       <br/>
       <p><em>Ao aceitar a presente proposta para os Produtos Jusbrasil Soluções, você declara que leu e concorda com os <a href="https://solucoes.jusbrasil.com.br/termos-de-uso">Termos de Uso</a>, o <a href="https://solucoes.jusbrasil.com.br/contrato-de-prestacao-de-servicos">Contrato de Prestação de Serviços Jusbrasil Soluções</a> e o <a href="https://solucoes.jusbrasil.com.br/termo-de-tratamento-de-dados-pessoais">Termo de Tratamento de Dados Pessoais</a>.</em></p>
+      <div style="display:flex;justify-content:center;margin-top:22px">${LOGO_SVG}</div>
     </div>
   </div>
 </div>`;
@@ -1090,6 +1091,7 @@ function usBuildDoc(){
       <p>${hoje()}</p>
       <br/>
       <p><em>Ao aceitar a presente proposta para os Produtos Jusbrasil, você declara que leu e concorda com os <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534072">Termos de Uso</a>, com a <a href="https://privacidade-jusbrasil.zendesk.com/hc/pt-br/articles/31145187022996">Política de Privacidade</a> e com o <a href="https://conteudo.jusbrasil.com.br/termo-de-adesao-jusbrasil-organizacoes">Contrato de Prestação de Serviços Jusbrasil para Pessoas Jurídicas</a>.</em></p>
+      <div style="display:flex;justify-content:center;margin-top:22px">${LOGO_SVG}</div>
     </div>
   </div>
 </div>`;
