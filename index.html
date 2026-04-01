@@ -68,6 +68,28 @@ input:focus,select:focus{border-color:#1E8A4C}
 .doc a{color:#1155CC}
 .doc .considerando{background:#f9f9f9;border-left:3px solid #00664f;padding:12px 16px;margin:16px 0;font-size:10.5pt;line-height:1.7}
 @media print{.doc-body{padding:20px 32px}}
+/* TABS */
+.tab-nav{display:flex;gap:8px;margin-bottom:16px}
+.tab-btn{flex:1;padding:12px 0;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:background .2s}
+.tab-btn.active{background:#1E8A4C;color:#fff;border-color:#1E8A4C}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+/* UPSELL */
+.us-aviso{margin-top:10px;padding:8px 12px;border-radius:6px;font-size:13px}
+.us-aviso.amarelo{background:#fff8e1;color:#7a5c00;border:1px solid #ffe082}
+.us-aviso.vermelho{background:#fdecea;color:#c0392b;border:1px solid #f5c6cb}
+.us-aviso.azul{background:#e8f4fd;color:#1a5276;border:1px solid #aed6f1}
+.us-result{background:#fff;border-radius:14px;padding:20px 22px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.2);border:2px solid #1E8A4C}
+.us-result.neg{border-color:#c0392b}
+.us-rh{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#1E8A4C;margin-bottom:14px}
+.us-result.neg .us-rh{color:#c0392b}
+.us-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0}
+.us-rl{font-size:13px;color:#555}
+.us-rv{font-size:13px;font-weight:500;color:#1a1a2e}
+.us-row.d .us-rl{font-weight:600;color:#1a1a2e}
+.us-row.d .us-rv{font-weight:700;color:#f26522}
+.us-row.d.neg .us-rv{color:#c0392b}
+.us-div{border-top:2px dashed #e0e0e0;margin:8px 0}
 </style>
 </head>
 <body>
@@ -89,6 +111,12 @@ input:focus,select:focus{border-color:#1E8A4C}
     <button id="btnEditar" onclick="voltarForm()">← Editar</button>
   </div>
 
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tabBtnRenovacoes" onclick="switchTab('Renovacoes')">Renovações</button>
+    <button class="tab-btn" id="tabBtnExpansoes" onclick="switchTab('Expansoes')">Expansões (Upsell)</button>
+  </div>
+
+  <div id="tabRenovacoes" class="tab-panel active">
   <div id="formArea">
     <div class="card">
       <div class="sec">Dados do Cliente</div>
@@ -229,17 +257,94 @@ input:focus,select:focus{border-color:#1E8A4C}
     </div>
     <div id="docWrap"></div>
   </div>
+  </div><!-- /tabRenovacoes -->
+
+  <div id="tabExpansoes" class="tab-panel">
+    <div id="usFormArea">
+      <div class="card">
+        <div class="sec">Dados do Cliente</div>
+        <div class="r2">
+          <div>
+            <label class="lbl">Tipo de Cliente</label>
+            <div class="tgl-row">
+              <button class="tgl sel" id="usB2B" onclick="usSetTipo('B2B')">B2B</button>
+              <button class="tgl" id="usB2G" onclick="usSetTipo('B2G')">B2G</button>
+            </div>
+          </div>
+          <div><label class="lbl">Nome do Cliente / Título do Deal</label><input id="usDeal" placeholder="Ex: Escritório Martins &amp; Associados" oninput="usCheck()"/></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec">Contrato Vigente</div>
+        <div class="r2">
+          <div><label class="lbl">Pacote atual</label><select id="usPacAtual" onchange="usRecalc()"><option value="Essencial">Essencial — até 5 usuários</option><option value="Profissional" selected>Profissional — até 10 usuários</option><option value="Equipes">Equipes — até 15 usuários</option><option value="Corporativo">Corporativo — a partir de 16 usuários</option></select></div>
+          <div><label class="lbl">Plano atual</label><select id="usNivelAtual" onchange="usRecalc()"><option>Básico</option><option>Avançado</option><option>Avançado + Jus IA</option></select></div>
+          <div id="usCorpAtualUsrsWrap" style="display:none"><label class="lbl">Nº de usuários atuais</label><input id="usCorpUsrsAtual" type="number" min="16" value="20" oninput="usRecalc()"/></div>
+          <div><label class="lbl">Modalidade de pagamento</label><select id="usModalidade" onchange="usRecalc()"><option value="mensal">Mensal</option><option value="anual" selected>Boleto único anual</option><option value="bienal">Boleto único bienal</option></select></div>
+          <div id="usMesInicioWrap"><label class="lbl">Mês de início do contrato</label><select id="usMesInicio" onchange="usRecalc()"></select></div>
+          <div id="usMesUpsellWrap"><label class="lbl">Mês do aditivo</label><select id="usMesUpsell" onchange="usRecalc()"></select></div>
+          <div id="usPagoWrap" style="grid-column:1/-1"><label class="lbl">Valor já pago pelo cliente (R$) — opcional</label><input id="usPago" type="number" min="0" placeholder="Tabela padrão" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Preencha apenas se o contrato vigente tiver precificação diferente da tabela.</span></div>
+          <div id="usCorpAtualWrap" style="display:none;grid-column:1/-1"><label class="lbl">Valor do contrato atual — Corporativo (R$) <span style="font-weight:400;color:#c0392b">obrigatório</span></label><input id="usCorpValAtual" type="number" min="0" placeholder="Valor total do ciclo vigente (anual ou bienal)" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Informe o valor total pago pelo cliente no ciclo atual.</span></div>
+        </div>
+        <div id="usValsAtual"></div>
+      </div>
+
+      <div class="card">
+        <div class="sec">Alteração do Contrato</div>
+        <div class="r2">
+          <div><label class="lbl">Variação de usuários</label><select id="usTipoVar" onchange="usRecalc()"><option value="adicionar">Adicionar usuários</option><option value="remover">Remover usuários</option><option value="nenhum">Sem alteração de usuários</option></select></div>
+          <div id="usQtdVarWrap"><label class="lbl" id="usQtdVarLbl">Usuários a adicionar</label><input id="usQtdVar" type="number" min="1" value="5" oninput="usRecalc()"/></div>
+          <div style="display:flex;flex-direction:column;gap:4px;justify-content:flex-end"><span style="font-size:12px;color:#888">Total de usuários</span><span id="usTotalUsrs" style="font-weight:800;font-size:20px;color:#1E8A4C">15 usuários</span></div>
+          <div><label class="lbl">Plano novo</label><select id="usNivelNovo" onchange="usRecalc()"><option>Básico</option><option>Avançado</option><option>Avançado + Jus IA</option></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;justify-content:flex-end"><span style="font-size:12px;color:#888">Pacote resultante</span><span id="usPacoteNovo" style="font-weight:700;font-size:16px;color:#1E8A4C">Equipes</span></div>
+        </div>
+        <div id="usAvisos"></div>
+        <div id="usCorpNovoWrap" style="display:none;margin-top:12px"><label class="lbl">Valor do novo contrato — Corporativo (R$) <span style="font-weight:400;color:#c0392b">obrigatório</span></label><input id="usCorpValNovo" type="number" min="0" placeholder="Valor total do novo ciclo Corporativo (anual ou bienal)" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Informe o valor negociado para o novo contrato Corporativo.</span></div>
+        <div id="usValsNovo"></div>
+      </div>
+
+      <div id="usResultado" class="us-result" style="display:none"></div>
+
+      <div class="card">
+        <div class="sec">Responsável &amp; Validade</div>
+        <div class="r3" style="margin-bottom:14px">
+          <div style="grid-column:span 2"><label class="lbl">Nome do Responsável</label><input id="usNome" placeholder="Seu nome" oninput="usCheck()"/></div>
+          <div><label class="lbl">Validade (dias)</label><input id="usVal" type="number" value="15" min="1"/></div>
+        </div>
+        <div><label class="lbl">E-mail</label><input id="usEmail" placeholder="nome@jusbrasil.com.br" oninput="usCheck()"/></div>
+      </div>
+
+      <button class="btn-go" id="usBtnGo" onclick="usGerar()" disabled>Visualizar Proposta de Expansão →</button>
+      <div class="hint" id="usHintTxt">Preencha nome do cliente, responsável e e-mail para continuar.</div>
+    </div>
+
+    <div id="usPreviewArea" style="display:none">
+      <div class="btn-row">
+        <button class="btn-back" onclick="usVoltarForm()">← Nova Proposta</button>
+        <button class="btn-dl" onclick="usBaixar()">⬇ Baixar HTML</button>
+        <button class="btn-pr" onclick="usImprimir()">🖨 Imprimir / Salvar PDF</button>
+      </div>
+      <div class="tip">💡 <strong>Para PDF:</strong> clique "Imprimir / Salvar PDF" → destino <strong>"Salvar como PDF"</strong> → desmarque "Cabeçalhos e rodapés".</div>
+      <div class="editor-bar">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="color:#fff;font-weight:700;font-size:13px">✏️ Edição direta da proposta</div>
+          <div style="display:flex;gap:8px">
+            <button onclick="usToggleEdit(true)" id="usBtnEditOn" style="padding:6px 14px;background:#1E8A4C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">Ativar edição</button>
+            <button onclick="usToggleEdit(false)" id="usBtnEditOff" style="padding:6px 14px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;display:none">Desativar edição</button>
+          </div>
+        </div>
+        <div id="usEditTip" style="font-size:12px;color:rgba(255,255,255,.6);display:none">✅ Clique em qualquer texto da proposta e edite livremente.</div>
+      </div>
+      <div id="usDocWrap"></div>
+    </div>
+  </div><!-- /tabExpansoes -->
 </div>
 
 <script>
 // ─── LOGO JUSBRASIL (base64 inline, fiel ao original) ──────────────────
-// SVG da logo Jusbrasil como string para embutir na proposta
-const LOGO_SVG = `<svg width="160" height="32" viewBox="0 0 480 96" xmlns="http://www.w3.org/2000/svg">
-  <line x1="30" y1="90" x2="58" y2="10" stroke="#F5C100" stroke-width="26" stroke-linecap="round"/>
-  <line x1="58" y1="10" x2="86" y2="90" stroke="#4A90D9" stroke-width="26" stroke-linecap="round"/>
-  <ellipse cx="58" cy="12" rx="18" ry="18" fill="#3BAF6A"/>
-  <text x="106" y="72" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="52" fill="#1a1a1a">Jusbrasil</text>
-</svg>`;
+// Logo Jusbrasil real (PNG base64 inline)
+const LOGO_SVG = `<img src="data:image/png;base64,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" style="height:36px;width:auto;" alt="Jusbrasil"/>`;
 
 // ─── PREÇO BASE POR USUÁRIO ───────────────────────────────────────────────
 const PU = {"Básico":58.90,"Avançado":98.90,"Avançado + Jus IA":138.90,"Avançado + Acesso Institucional":98.90,"Avançado + Jus IA + Acesso Institucional":138.90};
@@ -614,6 +719,428 @@ function imprimir(){
   if(!w){alert("Permita pop-ups para imprimir.");return;}
   w.document.write(getDocHTML());w.document.close();setTimeout(()=>w.print(),500);
 }
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab){
+  ['Renovacoes','Expansoes'].forEach(t=>{
+    document.getElementById('tab'+t).classList.toggle('active',t===tab);
+    document.getElementById('tabBtn'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='Expansoes') document.getElementById('btnEditar').style.display='none';
+}
+
+// ─── CALCULADORA DE EXPANSÃO ──────────────────────────────────────────────────
+const US_MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+let usTipo="B2B";
+
+function usCalcV(pac,pla){
+  const av=AVULSO[pac]?.[pla]; if(!av) return null;
+  const n=PAC_USR[pac]||5;
+  const pu=PU[pla]||58.90;
+  const aSD=pu*n*12,bSD=pu*n*24;
+  let pA,pB,pM,mD;
+  if(usTipo==="B2G"){
+    const d=B2G_DESC[pac]?.[pla]||{pA:15,pB:20};
+    pA=d.pA;pB=d.pB;pM=av.pM;mD=av.mD;
+  } else {
+    const ref=B2G_DESC[pac]?.[pla]||{pA:15,pB:20};
+    pA=ref.pA;pB=ref.pB;pM=av.pM;mD=av.m*(1-pM/100);
+  }
+  const aC=aSD*(1-pA/100),bC=bSD*(1-pB/100);
+  return{mensal:mD,anual:aC,bienal:bC};
+}
+
+function usSetTipo(t){
+  usTipo=t;
+  document.getElementById("usB2B").classList.toggle("sel",t==="B2B");
+  document.getElementById("usB2G").classList.toggle("sel",t==="B2G");
+}
+
+function usInit(){
+  const si=document.getElementById("usMesInicio");
+  const su=document.getElementById("usMesUpsell");
+  US_MESES.forEach((m,i)=>{
+    si.innerHTML+=`<option value="${i}">${m}</option>`;
+    su.innerHTML+=`<option value="${i}">${m}</option>`;
+  });
+  su.value=4;
+  usRecalc();
+}
+
+function usPacotePorUsuarios(n){
+  if(n===5) return "Essencial";
+  if(n===10) return "Profissional";
+  if(n===15) return "Equipes";
+  return "Corporativo";
+}
+
+function usRecalc(){
+  const pacAtual=document.getElementById("usPacAtual").value;
+  const nivelAtual=document.getElementById("usNivelAtual").value;
+  const nivelNovo=document.getElementById("usNivelNovo").value;
+  const modalidade=document.getElementById("usModalidade").value;
+  const tipoVar=document.getElementById("usTipoVar").value;
+  const corpAtual=pacAtual==="Corporativo";
+  const showMeses=modalidade!=="mensal";
+
+  // Mostrar/ocultar campo de quantidade e ajustar label
+  const temVar=tipoVar!=="nenhum";
+  document.getElementById("usQtdVarWrap").style.display=temVar?"":"none";
+  document.getElementById("usQtdVarLbl").textContent=tipoVar==="remover"?"Usuários a remover":"Usuários a adicionar";
+
+  // Calcular total de usuários e pacote resultante
+  const usrsAtual=corpAtual?(parseInt(document.getElementById("usCorpUsrsAtual").value)||16):(PAC_USR[pacAtual]||5);
+  const qtdVar=temVar?(parseInt(document.getElementById("usQtdVar").value)||0):0;
+  const usrsTotal=tipoVar==="remover"?Math.max(1,usrsAtual-qtdVar):(usrsAtual+qtdVar);
+  const pacNovo=usPacotePorUsuarios(usrsTotal);
+  const corpNovo=pacNovo==="Corporativo";
+
+  document.getElementById("usTotalUsrs").textContent=usrsTotal+" usuários";
+  document.getElementById("usPacoteNovo").textContent=pacNovo;
+  document.getElementById("usPacoteNovo").style.color=corpNovo?"#f26522":"#1E8A4C";
+
+  // Visibilidade dos campos
+  document.getElementById("usMesInicioWrap").style.display=showMeses?"":"none";
+  document.getElementById("usMesUpsellWrap").style.display=showMeses?"":"none";
+  document.getElementById("usPagoWrap").style.display=(showMeses&&!corpAtual)?"":"none";
+  document.getElementById("usCorpAtualUsrsWrap").style.display=corpAtual?"":"none";
+  document.getElementById("usCorpAtualWrap").style.display=corpAtual?"":"none";
+  document.getElementById("usCorpNovoWrap").style.display=corpNovo?"":"none";
+
+  // Placeholder do campo pago
+  if(showMeses&&!corpAtual){
+    const v=usCalcV(pacAtual,nivelAtual);
+    const tv=v?v[modalidade]:0;
+    document.getElementById("usPago").placeholder="Deixe em branco para usar o valor tabelado ("+fmt(tv)+")";
+  }
+
+  // Box de valores — Contrato Vigente
+  const reAtual=document.getElementById("usValsAtual");
+  if(!corpAtual){
+    const vA=usCalcV(pacAtual,nivelAtual);
+    if(vA){
+      reAtual.innerHTML=`<div class="vbox verde" style="margin-top:12px">
+        <div class="vt">Valores tabelados — ${pacAtual} · ${nivelAtual}</div>
+        <div class="vrow">
+          ${vi_html("Mensal",fmt(vA.mensal),modalidade==="mensal"?"c-v":"")}
+          ${vi_html("Anual",fmt(vA.anual),modalidade==="anual"?"c-v":"",fmt(vA.anual/12)+"/mês")}
+          ${vi_html("Bienal",fmt(vA.bienal),modalidade==="bienal"?"c-v":"",fmt(vA.bienal/24)+"/mês")}
+        </div>
+      </div>`;
+    } else { reAtual.innerHTML=""; }
+  } else { reAtual.innerHTML=""; }
+
+  // Box de valores — Novo Contrato
+  const reNovo=document.getElementById("usValsNovo");
+  if(!corpNovo){
+    const vN=usCalcV(pacNovo,nivelNovo);
+    if(vN){
+      reNovo.innerHTML=`<div class="vbox azul" style="margin-top:12px">
+        <div class="vt">Valores tabelados — ${pacNovo} · ${nivelNovo}</div>
+        <div class="vrow">
+          ${vi_html("Mensal",fmt(vN.mensal),modalidade==="mensal"?"c-a":"")}
+          ${vi_html("Anual",fmt(vN.anual),modalidade==="anual"?"c-a":"",fmt(vN.anual/12)+"/mês")}
+          ${vi_html("Bienal",fmt(vN.bienal),modalidade==="bienal"?"c-a":"",fmt(vN.bienal/24)+"/mês")}
+        </div>
+      </div>`;
+    } else { reNovo.innerHTML=""; }
+  } else { reNovo.innerHTML=""; }
+
+  // Avisos
+  const mudouPacote=pacNovo!==pacAtual;
+  const mudouNivel=nivelNovo!==nivelAtual;
+  let avisos="";
+  if(corpNovo) avisos+=`<div class="us-aviso amarelo">O cliente passará para o <strong>Pacote Corporativo</strong> (valores negociados). Informe o valor do novo contrato no campo abaixo.</div>`;
+  else if(mudouPacote) avisos+=`<div class="us-aviso amarelo">Mudança de pacote: <strong>${pacAtual}</strong> → <strong>${pacNovo}</strong>.</div>`;
+  if(mudouNivel) avisos+=`<div class="us-aviso azul">Alteração de plano: <strong>${nivelAtual}</strong> → <strong>${nivelNovo}</strong>.</div>`;
+  document.getElementById("usAvisos").innerHTML=avisos;
+
+  // Helpers de valor
+  function getAtualVal(mod){
+    if(corpAtual) return parseFloat(document.getElementById("usCorpValAtual").value)||0;
+    const v=usCalcV(pacAtual,nivelAtual); return v?v[mod]:0;
+  }
+  function getNovoVal(mod){
+    if(corpNovo) return parseFloat(document.getElementById("usCorpValNovo").value)||0;
+    const v=usCalcV(pacNovo,nivelNovo); return v?v[mod]:0;
+  }
+
+  const duracao=modalidade==="bienal"?24:12;
+  let calc,isNeg=false;
+
+  if(modalidade==="mensal"){
+    const atual=getAtualVal("mensal");
+    const novo=getNovoVal("mensal");
+    const diferenca=novo-atual;
+    isNeg=diferenca<0;
+    calc={tipo:"mensal",atual,novo,diferenca};
+  } else {
+    const mesInicio=parseInt(document.getElementById("usMesInicio").value)||0;
+    const mesUpsell=parseInt(document.getElementById("usMesUpsell").value)||0;
+    const pagoStr=corpAtual?"":document.getElementById("usPago").value.trim();
+    const totalAtual=getAtualVal(modalidade);
+    const totalNovo=getNovoVal(modalidade);
+    const pagoManual=parseFloat(pagoStr);
+    const pagoEfetivo=(!isNaN(pagoManual)&&pagoStr!=="")?pagoManual:totalAtual;
+    const d=(mesUpsell-mesInicio+12)%12;
+    const mesesUsados=Math.min(d===0?0:d,duracao);
+    const mesesRestantes=duracao-mesesUsados;
+    const difCiclo=totalNovo-pagoEfetivo;
+    const difMensal=difCiclo/duracao;
+    const proRata=difMensal*mesesRestantes;
+    isNeg=proRata<0;
+    calc={tipo:modalidade,totalNovo,pagoEfetivo,difCiclo,difMensal,mesesRestantes,proRata,duracao};
+  }
+
+  const re=document.getElementById("usResultado");
+  re.style.display="";
+  re.className="us-result"+(isNeg?" neg":"");
+  let html=`<div class="us-rh">Resultado do Cálculo${isNeg?" — Crédito / Devolução":""}</div>`;
+
+  if(calc.tipo==="mensal"){
+    html+=usRow("Valor mensal atual",fmt(calc.atual));
+    html+=usRow("Valor mensal novo",fmt(calc.novo));
+    html+=`<div class="us-div"></div>`;
+    html+=usRow(calc.diferenca>=0?"Acréscimo mensal":"Redução mensal",fmt(Math.abs(calc.diferenca)),true,calc.diferenca<0);
+    html+=`<p style="font-size:12px;color:#888;margin-top:10px">${calc.diferenca>=0?"A partir do aditivo, o cliente passará a pagar":"A partir do aditivo, o valor mensal será reduzido para"} <strong>${fmt(calc.novo)}/mês</strong>.</p>`;
+  } else {
+    html+=usRow("Total do novo contrato ("+calc.tipo+")",fmt(calc.totalNovo));
+    html+=usRow("Valor já pago pelo cliente",fmt(calc.pagoEfetivo));
+    html+=usRow("Diferença no ciclo",fmt(calc.difCiclo));
+    html+=usRow("Meses do ciclo",calc.duracao+" meses");
+    html+=usRow("Meses restantes",calc.mesesRestantes+" meses");
+    html+=`<div class="us-div"></div>`;
+    html+=usRow("Diferença mensal (diferença ÷ meses do ciclo)",fmt(calc.difMensal));
+    html+=usRow(calc.proRata>=0?"Pró-rata a cobrar":"Crédito / valor a devolver",fmt(Math.abs(calc.proRata)),true,calc.proRata<0);
+    html+=`<p style="font-size:12px;color:#888;margin-top:10px">Cálculo: ${fmt(calc.difCiclo)} ÷ ${calc.duracao} × ${calc.mesesRestantes} = <strong>${fmt(calc.proRata)}</strong></p>`;
+  }
+  re.innerHTML=html;
+  usCheck();
+}
+
+function usRow(label,val,destaque,neg){
+  return`<div class="us-row${destaque?" d":""}${neg?" neg":""}"><span class="us-rl">${label}</span><span class="us-rv">${val}</span></div>`;
+}
+
+function usCheck(){
+  const ok=document.getElementById("usDeal").value.trim()&&
+           document.getElementById("usNome").value.trim()&&
+           document.getElementById("usEmail").value.trim();
+  document.getElementById("usBtnGo").disabled=!ok;
+  document.getElementById("usHintTxt").style.display=ok?"none":"";
+}
+
+function usBuildDoc(){
+  const deal=document.getElementById("usDeal").value;
+  const nome=document.getElementById("usNome").value;
+  const email=document.getElementById("usEmail").value;
+  const valid=+document.getElementById("usVal").value||15;
+  const pacAtual=document.getElementById("usPacAtual").value;
+  const nivelAtual=document.getElementById("usNivelAtual").value;
+  const nivelNovo=document.getElementById("usNivelNovo").value;
+  const modalidade=document.getElementById("usModalidade").value;
+  const tipoVar=document.getElementById("usTipoVar").value;
+  const isB2G=usTipo==="B2G";
+  const corpAtualDoc=pacAtual==="Corporativo";
+
+  const usrsAtual=corpAtualDoc?(parseInt(document.getElementById("usCorpUsrsAtual").value)||16):(PAC_USR[pacAtual]||5);
+  const temVar=tipoVar!=="nenhum";
+  const qtdVar=temVar?(parseInt(document.getElementById("usQtdVar").value)||0):0;
+  const usrsTotal=tipoVar==="remover"?Math.max(1,usrsAtual-qtdVar):(usrsAtual+qtdVar);
+  const pacNovo=usPacotePorUsuarios(usrsTotal);
+  const corpNovoDoc=pacNovo==="Corporativo";
+  const usrsNovo=corpNovoDoc?usrsTotal:(PAC_USR[pacNovo]||usrsTotal);
+
+  const duracao=modalidade==="bienal"?24:12;
+  const anoAtual=new Date().getFullYear();
+
+  function docValAtual(mod){
+    if(corpAtualDoc) return parseFloat(document.getElementById("usCorpValAtual").value)||0;
+    const v=usCalcV(pacAtual,nivelAtual); return v?v[mod]:0;
+  }
+  function docValNovo(mod){
+    if(corpNovoDoc) return parseFloat(document.getElementById("usCorpValNovo").value)||0;
+    const v=usCalcV(pacNovo,nivelNovo); return v?v[mod]:0;
+  }
+
+  const modalidadeLabel=modalidade==="mensal"?"Boleto mensal":modalidade==="anual"?"Boleto único anual":"Boleto único bienal";
+  const variacaoStr=tipoVar==="adicionar"?`+${qtdVar} usuários`:tipoVar==="remover"?`−${qtdVar} usuários`:"Sem alteração";
+  const dp=DESC_PLANO[nivelNovo]||DESC_PLANO["Básico"];
+
+  let secaoContrato="",secaoCalculo="";
+
+  if(modalidade==="mensal"){
+    const totalAtual=docValAtual("mensal");
+    const totalNovo=docValNovo("mensal");
+    const dif=totalNovo-totalAtual;
+    secaoContrato=`
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Plano contratado</td><td style="padding:7px 10px;border:1px solid #ddd">${pacAtual} · ${nivelAtual}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Usuários atuais</td><td style="padding:7px 10px;border:1px solid #ddd">${usrsAtual} usuários</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Valor contratado</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(totalAtual)}/mês</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Modalidade de pagamento</td><td style="padding:7px 10px;border:1px solid #ddd">${modalidadeLabel}</td></tr>`;
+    secaoCalculo=`
+    <h3>Cobrança do Aditivo — Boleto Mensal</h3>
+    <p>A expansão será refletida diretamente nas faturas mensais a partir do próximo boleto, sem necessidade de ajuste retroativo.</p>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:11pt">
+      <tr style="background:#f5f5f5"><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Item</th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Valor</th></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Valor mensal atual (${usrsAtual} usuários)</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(totalAtual)}</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Valor mensal após expansão (${usrsNovo} usuários)</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(totalNovo)}</td></tr>
+      <tr style="background:${dif>=0?"#E8F5EE":"#fdecea"}"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700">${dif>=0?"Acréscimo mensal":"Redução mensal"}</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:${dif>=0?"#00664f":"#c0392b"}">${fmt(Math.abs(dif))}</td></tr>
+    </table>
+    <p>A partir do próximo boleto, o valor mensal passará a ser de <strong>${fmt(totalNovo)}</strong>, mantidas todas as demais condições do contrato vigente.</p>`;
+  } else {
+    const mesInicioIdx=parseInt(document.getElementById("usMesInicio").value)||0;
+    const mesUpsellIdx=parseInt(document.getElementById("usMesUpsell").value)||0;
+    const mesInicioNome=US_MESES[mesInicioIdx];
+    const mesUpsellNome=US_MESES[mesUpsellIdx];
+    const terminoIdx=(mesInicioIdx+duracao)%12;
+    const anoTermino=anoAtual+Math.floor((mesInicioIdx+duracao)/12);
+    const mesTerminoNome=US_MESES[terminoIdx];
+    const pagoStr=corpAtualDoc?"":document.getElementById("usPago").value.trim();
+    const totalAtual=docValAtual(modalidade);
+    const totalNovo=docValNovo(modalidade);
+    const pagoManual=parseFloat(pagoStr);
+    const pagoEfetivo=(!isNaN(pagoManual)&&pagoStr!=="")?pagoManual:totalAtual;
+    const d=(mesUpsellIdx-mesInicioIdx+12)%12;
+    const mesesUsados=Math.min(d===0?0:d,duracao);
+    const mesesRestantes=duracao-mesesUsados;
+    const difCiclo=totalNovo-pagoEfetivo;
+    const difMensal=difCiclo/duracao;
+    const proRata=difMensal*mesesRestantes;
+    const percRestante=Math.round(mesesRestantes/duracao*100);
+    secaoContrato=`
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Plano contratado</td><td style="padding:7px 10px;border:1px solid #ddd">${pacAtual} · ${nivelAtual}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Usuários atuais</td><td style="padding:7px 10px;border:1px solid #ddd">${usrsAtual} usuários</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Valor contratado</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(pagoEfetivo)}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Período de vigência</td><td style="padding:7px 10px;border:1px solid #ddd">${mesInicioNome}/${anoAtual} a ${mesTerminoNome}/${anoTermino}</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Modalidade de pagamento</td><td style="padding:7px 10px;border:1px solid #ddd">${modalidadeLabel}</td></tr>`;
+    secaoCalculo=`
+    <h3>Cobrança do Aditivo — Boleto Único (${modalidade==="anual"?"Anual":"Bienal"})</h3>
+    <p>O cliente já realizou o pagamento integral do contrato vigente. O aditivo considera apenas o período remanescente, calculado proporcionalmente a partir do mês de início da expansão.</p>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:11pt">
+      <tr style="background:#f5f5f5"><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Item</th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Valor</th></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Valor do pacote atual (${usrsAtual} usuários / período total)</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(pagoEfetivo)}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Valor do novo pacote (${usrsNovo} usuários / período total)</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(totalNovo)}</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Diferença entre os pacotes</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(difCiclo)}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Meses já utilizados no contrato vigente</td><td style="padding:7px 10px;border:1px solid #ddd">${mesesUsados} meses</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Meses restantes do contrato</td><td style="padding:7px 10px;border:1px solid #ddd">${mesesRestantes} meses</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Percentual do período remanescente</td><td style="padding:7px 10px;border:1px solid #ddd">${percRestante}%</td></tr>
+      <tr style="background:${proRata>=0?"#E8F5EE":"#fdecea"}"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700">${proRata>=0?"Valor do aditivo (proporcional ao período restante)":"Crédito / devolução"}</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:${proRata>=0?"#00664f":"#c0392b"}">${fmt(Math.abs(proRata))}</td></tr>
+    </table>
+    <p>${proRata>=0
+      ?`O valor do aditivo corresponde à diferença entre o novo pacote e o pacote vigente, calculada proporcionalmente sobre os <strong>${mesesRestantes} meses restantes</strong> do contrato, com vencimento mantido em ${mesTerminoNome}/${anoTermino}.<br><br><strong>Forma de pagamento:</strong> Boleto único no valor de <strong>${fmt(proRata)}</strong>, a ser emitido em ${mesUpsellNome}/${anoAtual}.`
+      :`O cálculo resulta em um crédito de <strong>${fmt(Math.abs(proRata))}</strong> a ser descontado ou devolvido ao cliente.`
+    }</p>`;
+  }
+
+  return`
+<div class="doc">
+  <div class="doc-header">
+    <div>${LOGO_SVG}</div>
+    <div class="doc-header-right">Proposta de Expansão <strong>Jusbrasil</strong> - Hub de Soluções</div>
+  </div>
+  <div class="doc-body">
+    <h1>${deal}</h1>
+    <p class="sub">Proposta de Expansão de Contrato — Jusbrasil para ${isB2G?"Órgãos Públicos":"Organizações"}</p>
+
+    <h2>Proponente</h2>
+    <p><strong>Razão social:</strong> Goshme Soluções para Internet LTDA.</p>
+    <p><strong>Nome fantasia:</strong> Jusbrasil</p>
+    <p><strong>CNPJ:</strong> 07.112.529/000146</p>
+    <p><strong>Inscrição estadual:</strong> isento</p>
+    <p><strong>Inscrição municipal:</strong> 250.883/001-13</p>
+    <p><strong>Endereço:</strong> Avenida Tancredo Neves, 620, Edifício Torre Empresarial Mundo Plaza, Loja 3305, Caminho das Árvores, Salvador/BA, CEP 41820-020</p>
+
+    <h2>Aditivo Contratual — Expansão de Usuários</h2>
+    <p>Esta proposta representa um aditivo ao contrato vigente do(a) <strong>${deal}</strong>, referente à expansão da quantidade de usuários contratados.</p>
+
+    <h3>Contrato Vigente</h3>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:11pt">
+      ${secaoContrato}
+    </table>
+
+    <h3>Alteração Solicitada</h3>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:11pt">
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;width:50%;font-weight:600">Variação de usuários</td><td style="padding:7px 10px;border:1px solid #ddd">${variacaoStr}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Total de usuários após o aditivo</td><td style="padding:7px 10px;border:1px solid #ddd">${usrsNovo} usuários</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Plano atual</td><td style="padding:7px 10px;border:1px solid #ddd">${nivelAtual}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Novo plano</td><td style="padding:7px 10px;border:1px solid #ddd">${nivelNovo}</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Pacote resultante</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:#00664f">${pacNovo}</td></tr>
+    </table>
+
+    ${secaoCalculo}
+
+    <h2>Condições Comerciais do Novo Pacote</h2>
+    <p><strong>Plano:</strong> ${nivelNovo} &nbsp;·&nbsp; <strong>Pacote:</strong> ${pacNovo} &nbsp;·&nbsp; <strong>Usuários:</strong> ${usrsNovo}</p>
+    <ul>${dp.map(d=>`<li>${d}</li>`).join("")}</ul>
+    <p class="nota">* A consulta processual por nome, CPF e número CNJ é limitada a buscas de baixo volume.</p>
+    <p class="nota"><em>Atenção: os valores e descontos apresentados permanecem até a data de validade da proposta, sendo passíveis de alteração posteriormente.</em></p>
+
+    <h2>Condições Técnicas</h2>
+    <p><strong>Prazo para habilitação das funcionalidades:</strong> as funcionalidades atreladas ao plano contratado serão liberadas em até 7 (sete) dias contados a partir do recebimento, pelo Jusbrasil, da confirmação do pagamento/nota de empenho.</p>
+    <p><strong>Suporte técnico:</strong> o Jusbrasil disponibiliza suporte técnico, de forma assíncrona para o e-mail suportesolucoes@jusbrasil.com.br, de segunda a sexta-feira em dias úteis, de 9 às 18 horas (horário de Brasília), com prazo de até 72 horas para primeira resposta.</p>
+
+    <div style="margin-top:28px;border-top:1px solid #ddd;padding-top:16px">
+      <p><strong>Responsável</strong></p>
+      <p>${nome} — Representante Comercial</p>
+      <p>${email}</p>
+      <p class="validade" style="margin-top:8px">Validade da proposta: ${valid} dias</p>
+    </div>
+
+    <div class="rodape">
+      <p>${hoje()}</p>
+      <br/>
+      <p><em>Ao aceitar a presente proposta para os Produtos Jusbrasil, você declara que leu e concorda com os <a href="https://suporte.jusbrasil.com.br/hc/pt-br/articles/360041534072">Termos de Uso</a>, com a <a href="https://privacidade-jusbrasil.zendesk.com/hc/pt-br/articles/31145187022996">Política de Privacidade</a> e com o <a href="https://conteudo.jusbrasil.com.br/termo-de-adesao-jusbrasil-organizacoes">Contrato de Prestação de Serviços Jusbrasil para Pessoas Jurídicas</a>.</em></p>
+    </div>
+  </div>
+</div>`;
+}
+
+function usGetDocHTML(){
+  const dw=document.getElementById("usDocWrap");
+  const css=document.querySelector('style').textContent;
+  return`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Proposta de Expansão Jusbrasil</title><style>${css}body{background:#fff;padding:0}@media print{body{margin:0}}</style></head><body>${dw.innerHTML}</body></html>`;
+}
+
+function usToggleEdit(on){
+  const doc=document.getElementById("usDocWrap");
+  doc.contentEditable=on?"true":"false";
+  doc.style.outline=on?"2px dashed rgba(30,138,76,.4)":"none";
+  document.getElementById("usBtnEditOn").style.display=on?"none":"";
+  document.getElementById("usBtnEditOff").style.display=on?"":"none";
+  document.getElementById("usEditTip").style.display=on?"":"none";
+  if(on) doc.focus();
+}
+
+function usGerar(){
+  document.getElementById("usFormArea").style.display="none";
+  document.getElementById("usPreviewArea").style.display="";
+  document.getElementById("usDocWrap").innerHTML=usBuildDoc();
+  document.getElementById("usDocWrap").contentEditable="false";
+}
+
+function usVoltarForm(){
+  usToggleEdit(false);
+  document.getElementById("usFormArea").style.display="";
+  document.getElementById("usPreviewArea").style.display="none";
+}
+
+function usBaixar(){
+  const deal=document.getElementById("usDeal").value.replace(/[^a-zA-Z0-9]/g,"_");
+  const b=new Blob([usGetDocHTML()],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(b);
+  a.download=`Proposta_Expansao_Jusbrasil_${deal}.html`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function usImprimir(){
+  const w=window.open("","_blank");
+  if(!w){alert("Permita pop-ups para imprimir.");return;}
+  w.document.write(usGetDocHTML());w.document.close();setTimeout(()=>w.print(),500);
+}
+
+document.addEventListener("DOMContentLoaded",usInit);
 </script>
 </body>
 </html>
