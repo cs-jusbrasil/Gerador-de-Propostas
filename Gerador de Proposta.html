@@ -313,6 +313,10 @@ input:focus,select:focus{border-color:#1E8A4C}
           <div><label class="lbl">Validade (dias)</label><input id="usVal" type="number" value="15" min="1"/></div>
         </div>
         <div><label class="lbl">E-mail</label><input id="usEmail" placeholder="nome@jusbrasil.com.br" oninput="usCheck()"/></div>
+        <div style="margin-top:14px;padding:10px 12px;background:#f0faf4;border-radius:8px;border:1px solid #c3e6d0;display:flex;align-items:flex-start;gap:10px">
+          <input type="checkbox" id="usIncluirOpcao2" style="width:16px;height:16px;cursor:pointer;margin-top:2px;flex-shrink:0"/>
+          <label for="usIncluirOpcao2" style="font-size:13px;color:#333;cursor:pointer;line-height:1.4">Incluir <strong>Opção 2</strong> na proposta — renovação antecipada por +12 meses com o pacote expandido (além do aditivo proporcional)</label>
+        </div>
       </div>
 
       <button class="btn-go" id="usBtnGo" onclick="usGerar()" disabled>Visualizar Proposta de Expansão →</button>
@@ -977,7 +981,8 @@ function usBuildDoc(){
   const variacaoStr=tipoVar==="adicionar"?`+${qtdVar} usuários`:tipoVar==="remover"?`−${qtdVar} usuários`:"Sem alteração";
   const dp=DESC_PLANO[nivelNovo]||DESC_PLANO["Básico"];
 
-  let secaoContrato="",secaoCalculo="";
+  const incluirOpcao2=document.getElementById("usIncluirOpcao2").checked;
+  let secaoContrato="",secaoCalculo="",secaoOpcao2="";
 
   if(modalidade==="mensal"){
     const totalAtual=docValAtual("mensal");
@@ -998,6 +1003,23 @@ function usBuildDoc(){
       <tr style="background:${dif>=0?"#E8F5EE":"#fdecea"}"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700">${dif>=0?"Acréscimo mensal":"Redução mensal"}</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:${dif>=0?"#00664f":"#c0392b"}">${fmt(Math.abs(dif))}</td></tr>
     </table>
     <p>A partir do próximo boleto, o valor mensal passará a ser de <strong>${fmt(totalNovo)}</strong>, mantidas todas as demais condições do contrato vigente.</p>`;
+    if(incluirOpcao2&&!corpNovoDoc){
+      const tvAnual=docValNovo("anual");
+      const tvMens=docValNovo("mensal");
+      const econAnual=(tvMens*12)-tvAnual;
+      secaoOpcao2=`
+    <h3>Migração para Contrato Anual</h3>
+    <p>Em vez de continuar com faturas mensais após a expansão, o cliente pode assinar um contrato anual com o novo pacote, garantindo desconto e previsibilidade orçamentária.</p>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:11pt">
+      <tr style="background:#f5f5f5"><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Item</th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Valor</th></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Pacote</td><td style="padding:7px 10px;border:1px solid #ddd">${pacNovo} · ${nivelNovo} · ${usrsNovo} usuários</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Modalidade</td><td style="padding:7px 10px;border:1px solid #ddd">Boleto único anual</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Valor anual (boleto único)</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(tvAnual)}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Equivalente mensal</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(tvAnual/12)}/mês</td></tr>
+      ${econAnual>0?`<tr style="background:#E8F5EE"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700">Economia vs. 12 boletos mensais</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:#00664f">${fmt(econAnual)}</td></tr>`:""}
+    </table>
+    <p>O contrato anual garante o novo pacote por 12 meses${econAnual>0?`, com economia de <strong>${fmt(econAnual)}</strong> em relação à soma dos boletos mensais`:""}.</p>`;
+    }
   } else {
     const mesInicioIdx=parseInt(document.getElementById("usMesInicio").value)||0;
     const mesUpsellIdx=parseInt(document.getElementById("usMesUpsell").value)||0;
@@ -1041,6 +1063,25 @@ function usBuildDoc(){
       ?`O valor do aditivo corresponde à diferença entre o novo pacote e o pacote vigente, calculada proporcionalmente sobre os <strong>${mesesRestantes} meses restantes</strong> do contrato, com vencimento mantido em ${mesTerminoNome}/${anoTermino}.<br><br><strong>Forma de pagamento:</strong> Boleto único no valor de <strong>${fmt(proRata)}</strong>, a ser emitido em ${mesUpsellNome}/${anoAtual}.`
       :`O cálculo resulta em um crédito de <strong>${fmt(Math.abs(proRata))}</strong> a ser descontado ou devolvido ao cliente.`
     }</p>`;
+    if(incluirOpcao2&&!corpNovoDoc){
+      const tvAnual=docValNovo("anual");
+      const fimRenovIdx=(terminoIdx+12)%12;
+      const anoFimRenov=anoTermino+Math.floor((terminoIdx+12)/12);
+      const fimRenovNome=US_MESES[fimRenovIdx];
+      secaoOpcao2=`
+    <h3>Renovação por Mais 12 Meses</h3>
+    <p>Em vez de realizar o aditivo proporcional, o cliente renova o contrato por mais 12 meses a partir do encerramento da vigência atual (${mesTerminoNome}/${anoTermino}), com o pacote expandido.</p>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:11pt">
+      <tr style="background:#f5f5f5"><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Item</th><th style="padding:7px 10px;border:1px solid #ddd;text-align:left">Valor</th></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Pacote</td><td style="padding:7px 10px;border:1px solid #ddd">${pacNovo} · ${nivelNovo} · ${usrsNovo} usuários</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Início da renovação</td><td style="padding:7px 10px;border:1px solid #ddd">${mesTerminoNome}/${anoTermino}</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Término da renovação</td><td style="padding:7px 10px;border:1px solid #ddd">${fimRenovNome}/${anoFimRenov}</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 10px;border:1px solid #ddd">Modalidade</td><td style="padding:7px 10px;border:1px solid #ddd">Boleto único anual</td></tr>
+      <tr style="background:#E8F5EE"><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700">Valor do novo contrato (12 meses)</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:#00664f">${fmt(tvAnual)}</td></tr>
+      <tr><td style="padding:7px 10px;border:1px solid #ddd">Equivalente mensal</td><td style="padding:7px 10px;border:1px solid #ddd">${fmt(tvAnual/12)}/mês</td></tr>
+    </table>
+    <p>A renovação antecipada garante continuidade sem interrupção de serviço, com o novo pacote ativo de <strong>${mesTerminoNome}/${anoTermino}</strong> até <strong>${fimRenovNome}/${anoFimRenov}</strong>.</p>`;
+    }
   }
 
   return`
@@ -1078,7 +1119,11 @@ function usBuildDoc(){
       <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">Pacote resultante</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;color:#00664f">${pacNovo}</td></tr>
     </table>
 
+    <div style="margin:20px 0 6px;padding:6px 14px;background:#f0faf4;border-left:4px solid #1E8A4C;border-radius:0 4px 4px 0"><span style="font-weight:700;color:#155e38;font-size:10pt;text-transform:uppercase;letter-spacing:.5px">Opção 1 — Aditivo dentro da vigência atual</span></div>
     ${secaoCalculo}
+
+    ${secaoOpcao2?`<div style="margin:24px 0 6px;padding:6px 14px;background:#eff6ff;border-left:4px solid #2563EB;border-radius:0 4px 4px 0"><span style="font-weight:700;color:#1e40af;font-size:10pt;text-transform:uppercase;letter-spacing:.5px">Opção 2 — Renovação Antecipada</span></div>
+    ${secaoOpcao2}`:""}
 
     <h2>Condições Comerciais do Novo Pacote</h2>
     <p><strong>Plano:</strong> ${nivelNovo} &nbsp;·&nbsp; <strong>Pacote:</strong> ${pacNovo} &nbsp;·&nbsp; <strong>Usuários:</strong> ${usrsNovo}</p>
