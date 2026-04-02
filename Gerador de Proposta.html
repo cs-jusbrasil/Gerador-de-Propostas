@@ -302,6 +302,17 @@ input:focus,select:focus{border-color:#1E8A4C}
         <div id="usAvisos"></div>
         <div id="usCorpNovoWrap" style="display:none;margin-top:12px"><label class="lbl">Valor do novo contrato — Corporativo (R$) <span style="font-weight:400;color:#c0392b">obrigatório</span></label><input id="usCorpValNovo" type="number" min="0" placeholder="Valor total do novo ciclo Corporativo (anual ou bienal)" oninput="usRecalc()"/><span style="font-size:11px;color:#888;display:block;margin-top:3px">Informe o valor negociado para o novo contrato Corporativo.</span></div>
         <div id="usValsNovo"></div>
+        <div id="usOpcaoWrap" style="display:none;margin-top:16px;padding:12px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #e0e0e0">
+          <div class="lbl" style="margin-bottom:10px">Opção de cobrança</div>
+          <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;margin-bottom:8px">
+            <input type="radio" name="usOpcao" id="usOpcao1" value="1" checked onchange="usRecalc()" style="margin-top:2px;flex-shrink:0"/>
+            <span style="font-size:13px"><strong>Opção 1 — Aditivo proporcional</strong><br/><span style="color:#888;font-size:11px">Cobrar a diferença pro-rata pelo período restante do contrato atual</span></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+            <input type="radio" name="usOpcao" id="usOpcao2radio" value="2" onchange="usRecalc()" style="margin-top:2px;flex-shrink:0"/>
+            <span style="font-size:13px"><strong>Opção 2 — Renovação antecipada</strong><br/><span style="color:#888;font-size:11px">Pro-rata agora + novo contrato de 12 meses com o pacote expandido</span></span>
+          </label>
+        </div>
       </div>
 
       <div id="usResultado" class="us-result" style="display:none"></div>
@@ -903,27 +914,64 @@ function usRecalc(){
     calc={tipo:modalidade,totalNovo,pagoEfetivo,difCiclo,difMensal,mesesRestantes,proRata,duracao};
   }
 
+  // Opção 2 toggle visibility
+  const vNPac=usCalcV(pacNovo,nivelNovo);
+  const tvAnualNovo=(!corpNovo&&vNPac)?vNPac.anual:0;
+  const showOpcaoToggle=!corpAtual&&!corpNovo&&tvAnualNovo>0;
+  document.getElementById("usOpcaoWrap").style.display=showOpcaoToggle?"":"none";
+  const opcao2=showOpcaoToggle&&document.getElementById("usOpcao2radio").checked;
+
   const re=document.getElementById("usResultado");
   re.style.display="";
-  re.className="us-result"+(isNeg?" neg":"");
-  let html=`<div class="us-rh">Resultado do Cálculo${isNeg?" — Crédito / Devolução":""}</div>`;
+  let html="";
 
-  if(calc.tipo==="mensal"){
-    html+=usRow("Valor mensal atual",fmt(calc.atual));
-    html+=usRow("Valor mensal novo",fmt(calc.novo));
-    html+=`<div class="us-div"></div>`;
-    html+=usRow(calc.diferenca>=0?"Acréscimo mensal":"Redução mensal",fmt(Math.abs(calc.diferenca)),true,calc.diferenca<0);
-    html+=`<p style="font-size:12px;color:#888;margin-top:10px">${calc.diferenca>=0?"A partir do aditivo, o cliente passará a pagar":"A partir do aditivo, o valor mensal será reduzido para"} <strong>${fmt(calc.novo)}/mês</strong>.</p>`;
+  if(opcao2){
+    re.className="us-result";
+    if(calc.tipo==="mensal"){
+      const econAnual=(calc.novo*12)-tvAnualNovo;
+      html+=`<div class="us-rh">Resultado — Opção 2: Migração para Contrato Anual</div>`;
+      html+=usRow("Valor mensal atual",fmt(calc.atual));
+      html+=usRow("Valor mensal após expansão",fmt(calc.novo));
+      html+=`<div class="us-div"></div>`;
+      html+=usRow("Novo contrato anual (12 meses)",fmt(tvAnualNovo));
+      html+=usRow("Equivalente mensal",fmt(tvAnualNovo/12)+"/mês");
+      if(econAnual>0) html+=usRow("Economia vs. 12 boletos mensais",fmt(econAnual),true,false);
+    } else {
+      const totalOpcao2=calc.proRata+tvAnualNovo;
+      html+=`<div class="us-rh">Resultado — Opção 2: Renovação Antecipada</div>`;
+      html+=`<div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px">Pró-rata imediato (contrato atual)</div>`;
+      html+=usRow("Total do novo contrato ("+calc.tipo+")",fmt(calc.totalNovo));
+      html+=usRow("Valor já pago pelo cliente",fmt(calc.pagoEfetivo));
+      html+=usRow("Diferença no ciclo",fmt(calc.difCiclo));
+      html+=usRow("Meses restantes",calc.mesesRestantes+" de "+calc.duracao);
+      html+=usRow("Pró-rata a cobrar agora",fmt(Math.abs(calc.proRata)),true,calc.proRata<0);
+      html+=`<div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px;padding-top:10px;border-top:1px solid #ddd">Renovação antecipada (+12 meses)</div>`;
+      html+=usRow("Valor do novo contrato (anual)",fmt(tvAnualNovo));
+      html+=usRow("Equivalente mensal",fmt(tvAnualNovo/12)+"/mês");
+      html+=`<div class="us-div"></div>`;
+      html+=usRow("Total do compromisso (pró-rata + renovação)",fmt(totalOpcao2),true,false);
+      html+=`<p style="font-size:12px;color:#888;margin-top:10px">${fmt(Math.abs(calc.proRata))} (agora) + ${fmt(tvAnualNovo)} (renovação) = <strong>${fmt(totalOpcao2)}</strong></p>`;
+    }
   } else {
-    html+=usRow("Total do novo contrato ("+calc.tipo+")",fmt(calc.totalNovo));
-    html+=usRow("Valor já pago pelo cliente",fmt(calc.pagoEfetivo));
-    html+=usRow("Diferença no ciclo",fmt(calc.difCiclo));
-    html+=usRow("Meses do ciclo",calc.duracao+" meses");
-    html+=usRow("Meses restantes",calc.mesesRestantes+" meses");
-    html+=`<div class="us-div"></div>`;
-    html+=usRow("Diferença mensal (diferença ÷ meses do ciclo)",fmt(calc.difMensal));
-    html+=usRow(calc.proRata>=0?"Pró-rata a cobrar":"Crédito / valor a devolver",fmt(Math.abs(calc.proRata)),true,calc.proRata<0);
-    html+=`<p style="font-size:12px;color:#888;margin-top:10px">Cálculo: ${fmt(calc.difCiclo)} ÷ ${calc.duracao} × ${calc.mesesRestantes} = <strong>${fmt(calc.proRata)}</strong></p>`;
+    re.className="us-result"+(isNeg?" neg":"");
+    html+=`<div class="us-rh">Resultado do Cálculo${isNeg?" — Crédito / Devolução":""}</div>`;
+    if(calc.tipo==="mensal"){
+      html+=usRow("Valor mensal atual",fmt(calc.atual));
+      html+=usRow("Valor mensal novo",fmt(calc.novo));
+      html+=`<div class="us-div"></div>`;
+      html+=usRow(calc.diferenca>=0?"Acréscimo mensal":"Redução mensal",fmt(Math.abs(calc.diferenca)),true,calc.diferenca<0);
+      html+=`<p style="font-size:12px;color:#888;margin-top:10px">${calc.diferenca>=0?"A partir do aditivo, o cliente passará a pagar":"A partir do aditivo, o valor mensal será reduzido para"} <strong>${fmt(calc.novo)}/mês</strong>.</p>`;
+    } else {
+      html+=usRow("Total do novo contrato ("+calc.tipo+")",fmt(calc.totalNovo));
+      html+=usRow("Valor já pago pelo cliente",fmt(calc.pagoEfetivo));
+      html+=usRow("Diferença no ciclo",fmt(calc.difCiclo));
+      html+=usRow("Meses do ciclo",calc.duracao+" meses");
+      html+=usRow("Meses restantes",calc.mesesRestantes+" meses");
+      html+=`<div class="us-div"></div>`;
+      html+=usRow("Diferença mensal (diferença ÷ meses do ciclo)",fmt(calc.difMensal));
+      html+=usRow(calc.proRata>=0?"Pró-rata a cobrar":"Crédito / valor a devolver",fmt(Math.abs(calc.proRata)),true,calc.proRata<0);
+      html+=`<p style="font-size:12px;color:#888;margin-top:10px">Cálculo: ${fmt(calc.difCiclo)} ÷ ${calc.duracao} × ${calc.mesesRestantes} = <strong>${fmt(calc.proRata)}</strong></p>`;
+    }
   }
   re.innerHTML=html;
   usCheck();
