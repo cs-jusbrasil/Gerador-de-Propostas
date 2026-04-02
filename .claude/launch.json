@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gerador-proposta",
+      "runtimeExecutable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "$l=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,5000);$l.Start();Write-Host 'listening on 5000';$r='C:\\Users\\ana.amaral\\Desktop\\Ana\\Gerador de Propostas - HTML';while($true){$c=$l.AcceptTcpClient();$s=$c.GetStream();$rd=[IO.StreamReader]::new($s);$rl=$rd.ReadLine();while($rd.ReadLine()-ne''){}; $p='/index.html';if($rl-match'^GET\\s+(\\S+)'){$p=$Matches[1].Split('?')[0]};if($p-eq'/'){$p='/index.html'};$fp=Join-Path $r $p.TrimStart('/').Replace('/','\\')}"],
+      "port": 5000,
+      "autoPort": false
+    }
+  ]
+}
